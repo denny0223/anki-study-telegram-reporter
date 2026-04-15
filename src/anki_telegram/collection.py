@@ -78,6 +78,13 @@ def _connect_read_only(collection_path: Path) -> sqlite3.Connection:
 
 
 def _load_deck_names(connection: sqlite3.Connection) -> dict[str, str]:
+    deck_table = connection.execute(
+        "select 1 from sqlite_master where type='table' and name='decks'"
+    ).fetchone()
+    if deck_table:
+        rows = connection.execute("select id, name from decks").fetchall()
+        return {str(deck_id): str(name) for deck_id, name in rows}
+
     try:
         row = connection.execute("select decks from col limit 1").fetchone()
     except sqlite3.Error as exc:

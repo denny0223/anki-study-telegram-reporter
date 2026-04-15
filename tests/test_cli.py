@@ -10,7 +10,11 @@ def test_report_mock_dry_run_outputs_message(capsys) -> None:
     assert "答題數：132 / 100" in captured.out
 
 
-def test_ankiweb_source_reports_current_phase_error(capsys) -> None:
+def test_ankiweb_source_requires_credentials_without_local_env(tmp_path, monkeypatch, capsys) -> None:
+    monkeypatch.chdir(tmp_path)
+    monkeypatch.delenv("ANKI_USERNAME", raising=False)
+    monkeypatch.delenv("ANKI_PASSWORD", raising=False)
+
     result = main(["report", "--source", "ankiweb", "--dry-run"])
 
     assert result == 2

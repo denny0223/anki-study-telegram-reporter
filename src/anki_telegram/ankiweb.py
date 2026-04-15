@@ -8,6 +8,8 @@ read-only mode.
 
 from __future__ import annotations
 
+from contextlib import redirect_stdout
+import io
 from pathlib import Path
 from typing import Protocol
 
@@ -63,9 +65,12 @@ def fetch_collection_to_path(
     collection = collection_factory(str(collection_path))
 
     try:
-        auth = collection.sync_login(config.anki_username, config.anki_password, None)
-        status = collection.sync_status(auth)
-        _sync_by_required_state(collection, auth, status.required)
+        with redirect_stdout(io.StringIO()):
+            auth = collection.sync_login(config.anki_username, config.anki_password, None)
+            status = collection.sync_status(auth)
+            if status.new_endpoint:
+                auth.endpoint = status.new_endpoint
+            _sync_by_required_state(collection, auth, status.required)
     except Exception as exc:
         if isinstance(exc, AnkiWebSyncError):
             raise
@@ -83,19 +88,25 @@ def _sync_by_required_state(collection: AnkiCollection, auth, required: int) -> 
     if required == sync_pb2.SyncStatusResponse.NO_CHANGES:
         return
 
-    if required == sync_pb2.SyncStatusResponse.NORMAL_SYNC:
+    if required in {
+        sync_pb2.SyncStatusResponse.NORMAL_SYNC,
+        sync_pb2.SyncStatusResponse.FULL_SYNC,
+    }:
         output = collection.sync_collection(auth, sync_media=False)
-        if output.required == sync_pb2.SyncStatusResponse.FULL_SYNC:
+        if output.new_endpoint:
+            auth.endpoint = output.new_endpoint
+        if output.required in {
+            sync_pb2.SyncCollectionResponse.FULL_SYNC,
+            sync_pb2.SyncCollectionResponse.FULL_DOWNLOAD,
+        }:
             _download_full_collection(collection, auth)
+        elif output.required == sync_pb2.SyncCollectionResponse.FULL_UPLOAD:
+            raise AnkiWebSyncError("AnkiWeb requested a full upload; refusing to upload from automation.")
         elif output.required not in {
-            sync_pb2.SyncStatusResponse.NO_CHANGES,
-            sync_pb2.SyncStatusResponse.NORMAL_SYNC,
+            sync_pb2.SyncCollectionResponse.NO_CHANGES,
+            sync_pb2.SyncCollectionResponse.NORMAL_SYNC,
         }:
             raise AnkiWebSyncError(f"Unsupported Anki sync response: {output.required}")
-        return
-
-    if required == sync_pb2.SyncStatusResponse.FULL_SYNC:
-        _download_full_collection(collection, auth)
         return
 
     raise AnkiWebSyncError(f"Unsupported Anki sync status: {required}")

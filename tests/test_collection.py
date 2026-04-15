@@ -64,11 +64,37 @@ def test_extract_daily_metrics_filters_decks(tmp_path) -> None:
     assert metrics.again_count == 0
 
 
+def test_extract_daily_metrics_reads_newer_decks_table(tmp_path) -> None:
+    collection = tmp_path / "collection.anki2"
+    _create_collection(
+        collection,
+        [
+            _review(1, "2026-04-15T08:00:00+08:00", cid=100, ease=3, review_type=1),
+            _review(2, "2026-04-15T09:00:00+08:00", cid=200, ease=4, review_type=1),
+        ],
+        cards={100: 10, 200: 20},
+        decks={"10": "Legacy Empty"},
+        newer_decks={10: "Japanese", 20: "English"},
+    )
+
+    metrics = extract_daily_metrics(
+        collection_path=collection,
+        report_date=date(2026, 4, 15),
+        timezone_name="Asia/Taipei",
+        daily_goal_reviews=10,
+        target_decks=("English",),
+    )
+
+    assert metrics.review_count == 1
+    assert metrics.easy_count == 1
+
+
 def _create_collection(
     path,
     reviews: list[tuple[int, int, int, int]],
     cards: dict[int, int] | None = None,
     decks: dict[str, str] | None = None,
+    newer_decks: dict[int, str] | None = None,
 ) -> None:
     cards = cards or {100: 10, 101: 10, 102: 10, 103: 10, 104: 10}
     decks = decks or {"10": "Default"}
@@ -78,12 +104,16 @@ def _create_collection(
         connection.execute("create table col (decks text not null)")
         connection.execute("create table cards (id integer primary key, did integer not null)")
         connection.execute("create table revlog (id integer primary key, cid integer not null, ease integer not null, type integer not null)")
+        if newer_decks is not None:
+            connection.execute("create table decks (id integer primary key, name text not null)")
         connection.execute(
             "insert into col (decks) values (?)",
             (json.dumps({deck_id: {"name": name} for deck_id, name in decks.items()}),),
         )
         connection.executemany("insert into cards (id, did) values (?, ?)", cards.items())
         connection.executemany("insert into revlog (id, cid, ease, type) values (?, ?, ?, ?)", reviews)
+        if newer_decks is not None:
+            connection.executemany("insert into decks (id, name) values (?, ?)", newer_decks.items())
         connection.commit()
     finally:
         connection.close()

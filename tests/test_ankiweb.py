@@ -10,11 +10,13 @@ from anki_telegram.config import build_config
 class FakeStatus:
     def __init__(self, required: int) -> None:
         self.required = required
+        self.new_endpoint = ""
 
 
 class FakeSyncOutput:
     def __init__(self, required: int) -> None:
         self.required = required
+        self.new_endpoint = "https://sync.example"
 
 
 class FakeCollection:
@@ -27,7 +29,11 @@ class FakeCollection:
 
     def sync_login(self, username: str, password: str, endpoint: str | None):
         self.calls.append(("sync_login", username, password, endpoint))
-        return object()
+        class Auth:
+            endpoint = ""
+
+        self.auth = Auth()
+        return self.auth
 
     def sync_status(self, auth):
         self.calls.append(("sync_status", auth))
@@ -35,7 +41,7 @@ class FakeCollection:
 
     def sync_collection(self, auth, sync_media: bool):
         self.calls.append(("sync_collection", sync_media))
-        return FakeSyncOutput(sync_pb2.SyncStatusResponse.NO_CHANGES)
+        return FakeSyncOutput(sync_pb2.SyncCollectionResponse.FULL_DOWNLOAD)
 
     def full_upload_or_download(self, *, auth, server_usn: int | None, upload: bool) -> None:
         self.calls.append(("full_upload_or_download", server_usn, upload))
@@ -73,6 +79,8 @@ def test_fetch_collection_full_sync_downloads_without_upload(tmp_path) -> None:
     calls = FakeCollection.instances[0].calls
     assert calls[0] == ("sync_login", "user", "pass", None)
     assert calls[1][0] == "sync_status"
+    assert ("sync_collection", False) in calls
     assert ("full_upload_or_download", None, False) in calls
     assert ("reopen", True) in calls
     assert ("close", False) in calls
+    assert FakeCollection.instances[0].auth.endpoint == "https://sync.example"
