@@ -104,6 +104,10 @@ Acceptance:
 - [ ] Add retry/backoff for transient network failures.
 - [x] Add failure-mode documentation.
 
+## Phase 8: Local Verification Tools
+
+- [x] Add optional Anki collection output directory for local inspection.
+
 Acceptance:
 
 - Common failure modes have clear messages.

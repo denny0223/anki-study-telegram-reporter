@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from contextlib import nullcontext
 from tempfile import TemporaryDirectory
 from pathlib import Path
 
@@ -43,8 +44,13 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
 
 def ankiweb_metrics(config: AppConfig) -> StudyMetrics:
     try:
-        with TemporaryDirectory(prefix="anki-telegram-") as temp_dir:
-            collection_path = fetch_collection_to_path(config=config, workspace=Path(temp_dir))
+        workspace_context = (
+            nullcontext(config.anki_collection_output_dir)
+            if config.anki_collection_output_dir is not None
+            else TemporaryDirectory(prefix="anki-telegram-")
+        )
+        with workspace_context as workspace:
+            collection_path = fetch_collection_to_path(config=config, workspace=Path(workspace))
             return extract_daily_metrics(
                 collection_path=collection_path,
                 report_date=config.report_date,

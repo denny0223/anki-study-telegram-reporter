@@ -27,6 +27,7 @@ class AppConfig:
     excluded_decks: tuple[str, ...]
     anki_username: str | None
     anki_password: str | None
+    anki_collection_output_dir: Path | None
     telegram_bot_token: str | None
     telegram_chat_id: str | None
     telegram_thread_id: str | None
@@ -93,6 +94,7 @@ def build_config(
         excluded_decks=_parse_csv(merged.get("EXCLUDED_DECKS", "")),
         anki_username=_blank_to_none(merged.get("ANKI_USERNAME")),
         anki_password=_blank_to_none(merged.get("ANKI_PASSWORD")),
+        anki_collection_output_dir=_parse_optional_path(merged.get("ANKI_COLLECTION_OUTPUT_DIR")),
         telegram_bot_token=_blank_to_none(merged.get("TELEGRAM_BOT_TOKEN")),
         telegram_chat_id=_blank_to_none(merged.get("TELEGRAM_CHAT_ID")),
         telegram_thread_id=_blank_to_none(merged.get("TELEGRAM_THREAD_ID")),
@@ -165,3 +167,10 @@ def _blank_to_none(value: str | None) -> str | None:
     if value is None or not value.strip():
         return None
     return value
+
+
+def _parse_optional_path(value: str | None) -> Path | None:
+    value = _blank_to_none(value)
+    if value is None:
+        return None
+    return Path(value).expanduser()

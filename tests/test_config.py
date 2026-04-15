@@ -47,3 +47,17 @@ def test_env_values_are_used() -> None:
 
     assert config.daily_goal_reviews == 42
     assert config.target_decks == ("Japanese", "English")
+
+
+def test_optional_collection_output_dir_is_parsed() -> None:
+    config = build_config(
+        source="mock",
+        dry_run=True,
+        send=False,
+        report_date=None,
+        env={"ANKI_COLLECTION_OUTPUT_DIR": "~/anki-debug"},
+        dotenv={},
+    )
+
+    assert config.anki_collection_output_dir is not None
+    assert str(config.anki_collection_output_dir).endswith("anki-debug")

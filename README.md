@@ -72,6 +72,26 @@ Then run:
 uv run anki-telegram report --source ankiweb --send
 ```
 
+To keep the downloaded collection for local inspection, set:
+
+```env
+ANKI_COLLECTION_OUTPUT_DIR=anki-collection-debug
+```
+
+Then run:
+
+```bash
+uv run anki-telegram report --source ankiweb --dry-run
+```
+
+The downloaded SQLite collection will be kept at:
+
+```text
+anki-collection-debug/collection.anki2
+```
+
+This directory is ignored by git.
+
 ## GitHub Actions
 
 The workflow is defined at `.github/workflows/daily-report.yml`.

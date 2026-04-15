@@ -22,6 +22,7 @@ venv/
 
 # Anki temporary data
 .anki-temp/
+anki-collection-debug/
 anki-temp/
 collection.anki2
 collection.anki21
