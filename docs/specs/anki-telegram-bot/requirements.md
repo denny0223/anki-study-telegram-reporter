@@ -141,7 +141,7 @@ The repository must include a scheduled workflow.
 Acceptance criteria:
 
 - The workflow supports `schedule` and `workflow_dispatch`.
-- The schedule defaults to a Taipei evening report time.
+- The schedule defaults to 18:00 and 22:00 Asia/Taipei.
 - The workflow installs dependencies from a lockfile.
 - The workflow can run a mock dry-run validation without secrets.
 - Real production sends use GitHub Actions secrets.

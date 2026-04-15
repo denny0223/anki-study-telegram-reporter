@@ -105,11 +105,11 @@ It runs:
 - a mock dry-run without secrets
 - the production report on the daily schedule or when manually triggered with `send=true`
 
-The default schedule runs twice per day, 08:00 and 23:00 Asia/Taipei:
+The default schedule runs twice per day, 18:00 and 22:00 Asia/Taipei:
 
 ```yaml
-cron: "0 0 * * *"
-cron: "0 15 * * *"
+cron: "0 10 * * *"
+cron: "0 14 * * *"
 ```
 
 Required repository secrets:
