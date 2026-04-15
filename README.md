@@ -102,9 +102,10 @@ It runs:
 - a mock dry-run without secrets
 - the production report on the daily schedule or when manually triggered with `send=true`
 
-The default schedule is 23:00 Asia/Taipei:
+The default schedule runs twice per day, 08:00 and 23:00 Asia/Taipei:
 
 ```yaml
+cron: "0 0 * * *"
 cron: "0 15 * * *"
 ```
 
@@ -125,6 +126,7 @@ Optional repository variables:
 - `DAILY_GOAL_REVIEWS`, default `100`
 - `VOCABULARY_TARGET_COUNT`, default `1600`
 - `EXAM_DATE`, default `2026-05-17`
+- `REPORT_SLOT`, default `auto`; use `morning` or `evening` to force copy style
 - `TARGET_DECKS`
 - `EXCLUDED_DECKS`
 

@@ -2,7 +2,8 @@ name: Daily Anki Telegram Report
 
 on:
   schedule:
-    # 23:00 Asia/Taipei.
+    # 08:00 and 23:00 Asia/Taipei.
+    - cron: "0 0 * * *"
     - cron: "0 15 * * *"
   workflow_dispatch:
     inputs:
@@ -114,6 +115,7 @@ jobs:
           DAILY_GOAL_REVIEWS: ${{ vars.DAILY_GOAL_REVIEWS || '100' }}
           VOCABULARY_TARGET_COUNT: ${{ vars.VOCABULARY_TARGET_COUNT || '1600' }}
           EXAM_DATE: ${{ vars.EXAM_DATE || '2026-05-17' }}
+          REPORT_SLOT: ${{ vars.REPORT_SLOT || 'auto' }}
           TARGET_DECKS: ${{ vars.TARGET_DECKS }}
           EXCLUDED_DECKS: ${{ vars.EXCLUDED_DECKS }}
         run: |

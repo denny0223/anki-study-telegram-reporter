@@ -10,6 +10,7 @@ import os
 
 
 SUPPORTED_SOURCES = {"mock", "ankiweb"}
+SUPPORTED_REPORT_SLOTS = {"auto", "morning", "evening"}
 
 
 class ConfigError(ValueError):
@@ -25,6 +26,7 @@ class AppConfig:
     daily_goal_reviews: int
     vocabulary_target_count: int
     exam_date: date
+    report_slot: str
     target_decks: tuple[str, ...]
     excluded_decks: tuple[str, ...]
     anki_username: str | None
@@ -89,6 +91,11 @@ def build_config(
         merged.get("VOCABULARY_TARGET_COUNT", "1600"), "VOCABULARY_TARGET_COUNT"
     )
     exam_date = _parse_date(merged.get("EXAM_DATE", "2026-05-17"), "EXAM_DATE")
+    report_slot = merged.get("REPORT_SLOT", "auto")
+    if report_slot not in SUPPORTED_REPORT_SLOTS:
+        raise ConfigError(
+            f"Unsupported REPORT_SLOT '{report_slot}'. Expected one of: {', '.join(sorted(SUPPORTED_REPORT_SLOTS))}."
+        )
 
     config = AppConfig(
         source=selected_source,
@@ -98,6 +105,7 @@ def build_config(
         daily_goal_reviews=daily_goal,
         vocabulary_target_count=vocabulary_target,
         exam_date=exam_date,
+        report_slot=report_slot,
         target_decks=_parse_csv(merged.get("TARGET_DECKS", "")),
         excluded_decks=_parse_csv(merged.get("EXCLUDED_DECKS", "")),
         anki_username=_blank_to_none(merged.get("ANKI_USERNAME")),
