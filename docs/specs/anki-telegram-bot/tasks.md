@@ -55,11 +55,11 @@ Acceptance:
 
 ## Phase 4: Anki Collection Read Model
 
-- [ ] Define read-only collection handle.
-- [ ] Implement SQLite revlog parser.
-- [ ] Implement timezone-aware date boundary logic.
-- [ ] Implement deck inclusion/exclusion filters.
-- [ ] Add SQLite fixture tests.
+- [x] Define read-only collection handle.
+- [x] Implement SQLite revlog parser.
+- [x] Implement timezone-aware date boundary logic.
+- [x] Implement deck inclusion/exclusion filters.
+- [x] Add SQLite fixture tests.
 
 Acceptance:
 
