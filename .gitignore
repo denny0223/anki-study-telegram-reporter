@@ -1,0 +1,40 @@
+# Local Codex/session marker
+.codex
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+dist/
+build/
+*.egg-info/
+.venv/
+venv/
+
+# Anki temporary data
+.anki-temp/
+anki-temp/
+collection.anki2
+collection.anki21
+collection.media/
+*.apkg
+
+# Logs and local output
+*.log
+logs/
+tmp/
+temp/
+
+# OS/editor files
+.DS_Store
+.idea/
+.vscode/
