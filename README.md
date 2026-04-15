@@ -10,7 +10,7 @@ Development follows Spec-Driven Development. Start with the spec documents:
 
 ## Current Status
 
-Planning/specification stage.
+Phase 0 implementation: project foundation.
 
 The intended production workflow is:
 
@@ -21,3 +21,25 @@ The intended production workflow is:
 5. The app sends the report through Telegram Bot API.
 
 The AnkiWeb collection sync implementation is treated as the main technical risk and will be validated separately before production use.
+
+## Local Development
+
+Create a virtual environment and install development dependencies:
+
+```bash
+python -m venv .venv
+. .venv/bin/activate
+python -m pip install -e ".[dev]"
+```
+
+Run tests:
+
+```bash
+pytest
+```
+
+The first runnable target will be:
+
+```bash
+anki-telegram report --source mock --dry-run
+```

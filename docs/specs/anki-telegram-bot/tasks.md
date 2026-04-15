@@ -2,11 +2,11 @@
 
 ## Phase 0: Project Foundation
 
-- [ ] Initialize Python project metadata.
-- [ ] Add `.gitignore` for `.env`, caches, temp Anki data, logs, and build outputs.
-- [ ] Add `.env.example` with all supported configuration keys.
-- [ ] Add README with local dry-run and GitHub Actions setup instructions.
-- [ ] Add baseline test tooling.
+- [x] Initialize Python project metadata.
+- [x] Add `.gitignore` for `.env`, caches, temp Anki data, logs, and build outputs.
+- [x] Add `.env.example` with all supported configuration keys.
+- [x] Add README with local dry-run and GitHub Actions setup instructions.
+- [x] Add baseline test tooling.
 
 Acceptance:
 
