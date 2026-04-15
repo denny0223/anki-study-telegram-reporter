@@ -1,4 +1,4 @@
-# Tasks: Anki Telegram Study Reporter
+# Tasks: Anki Study Telegram Reporter
 
 ## Phase 0: Project Foundation
 

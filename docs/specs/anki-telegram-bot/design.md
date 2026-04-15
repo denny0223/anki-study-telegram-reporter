@@ -1,4 +1,4 @@
-# Design: Anki Telegram Study Reporter
+# Design: Anki Study Telegram Reporter
 
 ## Development Approach
 

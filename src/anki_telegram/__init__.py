@@ -1,4 +1,4 @@
-"""Anki Telegram study reporter."""
+"""Anki study progress reporter for Telegram."""
 
 __all__ = ["__version__"]
 

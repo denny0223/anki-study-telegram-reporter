@@ -1,4 +1,4 @@
-name: Daily Anki Telegram Report
+name: Daily Anki Study Telegram Report
 
 on:
   schedule:
@@ -79,7 +79,7 @@ jobs:
         run: uv sync --locked --extra dev
 
       - name: Generate mock report
-        run: uv run anki-telegram report --source mock --dry-run
+        run: uv run anki-study-telegram-reporter report --source mock --dry-run
 
   send-report:
     name: Send report
@@ -124,4 +124,4 @@ jobs:
           if [ -n "${{ github.event.inputs.report_date }}" ]; then
             args+=(--date "${{ github.event.inputs.report_date }}")
           fi
-          uv run anki-telegram "${args[@]}"
+          uv run anki-study-telegram-reporter "${args[@]}"

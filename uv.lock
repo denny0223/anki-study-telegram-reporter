@@ -24,7 +24,7 @@ wheels = [
 ]
 
 [[package]]
-name = "anki-telegram"
+name = "anki-study-telegram-reporter"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [

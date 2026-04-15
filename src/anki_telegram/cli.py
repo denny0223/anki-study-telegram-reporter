@@ -1,4 +1,4 @@
-"""Command-line entrypoint for the Anki Telegram reporter."""
+"""Command-line entrypoint for the Anki study Telegram reporter."""
 
 from __future__ import annotations
 
@@ -67,7 +67,7 @@ def _run_report(args: argparse.Namespace) -> int:
 
 
 def _build_parser() -> argparse.ArgumentParser:
-    parser = argparse.ArgumentParser(prog="anki-telegram")
+    parser = argparse.ArgumentParser(prog="anki-study-telegram-reporter")
     subparsers = parser.add_subparsers(dest="command")
 
     report = subparsers.add_parser("report", help="Generate and optionally send a daily study report.")

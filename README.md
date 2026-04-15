@@ -1,6 +1,6 @@
-# Anki Telegram Study Reporter
+# Anki Study Telegram Reporter
 
-This project will generate a daily Anki study report and post it to a Telegram group.
+This project generates daily Anki study progress reports and posts them to a Telegram group.
 
 Development follows Spec-Driven Development. Start with the spec documents:
 
@@ -42,14 +42,17 @@ uv run pytest
 Run a mock report:
 
 ```bash
-uv run anki-telegram report --source mock --date 2026-04-15 --dry-run
+uv run anki-study-telegram-reporter report --source mock --date 2026-04-15 --dry-run
 ```
+
+The old `anki-telegram` command is kept as a compatibility alias, but new usage
+should prefer `anki-study-telegram-reporter`.
 
 Run a local AnkiWeb dry-run:
 
 ```bash
 cp .env.example .env
-uv run anki-telegram report --source ankiweb --dry-run
+uv run anki-study-telegram-reporter report --source ankiweb --dry-run
 ```
 
 The `.env` file must contain at least:
@@ -69,7 +72,7 @@ TELEGRAM_CHAT_ID=
 Then run:
 
 ```bash
-uv run anki-telegram report --source ankiweb --send
+uv run anki-study-telegram-reporter report --source ankiweb --send
 ```
 
 To keep the downloaded collection for local inspection, set:
@@ -81,7 +84,7 @@ ANKI_COLLECTION_OUTPUT_DIR=anki-collection-debug
 Then run:
 
 ```bash
-uv run anki-telegram report --source ankiweb --dry-run
+uv run anki-study-telegram-reporter report --source ankiweb --dry-run
 ```
 
 The downloaded SQLite collection will be kept at:

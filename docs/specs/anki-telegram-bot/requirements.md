@@ -1,4 +1,4 @@
-# Requirements: Anki Telegram Study Reporter
+# Requirements: Anki Study Telegram Reporter
 
 ## Goal
 
