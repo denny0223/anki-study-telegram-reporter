@@ -29,10 +29,13 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
     base = StudyMetrics(
         report_date=config.report_date,
         review_count=132,
+        distinct_card_count=84,
         new_count=18,
         learning_count=24,
         review_card_count=90,
         relearn_count=0,
+        total_card_count=1600,
+        started_card_count=420,
         again_count=9,
         hard_count=16,
         good_count=82,

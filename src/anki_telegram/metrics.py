@@ -10,10 +10,13 @@ from datetime import date
 class StudyMetrics:
     report_date: date
     review_count: int
+    distinct_card_count: int
     new_count: int
     learning_count: int
     review_card_count: int
     relearn_count: int
+    total_card_count: int
+    started_card_count: int
     again_count: int
     hard_count: int
     good_count: int

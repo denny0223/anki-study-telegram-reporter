@@ -32,33 +32,48 @@ def extract_daily_metrics(
         deck_names = _load_deck_names(connection)
         rows = connection.execute(
             """
-            select r.ease, r.type, c.did
+            select r.cid, r.ease, r.type, c.did
             from revlog r
             left join cards c on c.id = r.cid
             where r.id >= ? and r.id < ?
             """,
             (start_ms, end_ms),
         ).fetchall()
+        card_rows = connection.execute("select id, did from cards").fetchall()
+        started_rows = connection.execute("select distinct r.cid, c.did from revlog r left join cards c on c.id = r.cid").fetchall()
 
     filtered_rows = [
-        (ease, review_type, deck_names.get(str(deck_id), ""))
-        for ease, review_type, deck_id in rows
+        (card_id, ease, review_type, deck_names.get(str(deck_id), ""))
+        for card_id, ease, review_type, deck_id in rows
         if _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
     ]
+    filtered_cards = [
+        card_id
+        for card_id, deck_id in card_rows
+        if _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
+    ]
+    filtered_started_cards = {
+        card_id
+        for card_id, deck_id in started_rows
+        if _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
+    }
 
     review_count = len(filtered_rows)
-    again_count = sum(1 for ease, _, _ in filtered_rows if ease == 1)
-    hard_count = sum(1 for ease, _, _ in filtered_rows if ease == 2)
-    good_count = sum(1 for ease, _, _ in filtered_rows if ease == 3)
-    easy_count = sum(1 for ease, _, _ in filtered_rows if ease == 4)
+    again_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 1)
+    hard_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 2)
+    good_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 3)
+    easy_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 4)
 
     return StudyMetrics(
         report_date=report_date,
         review_count=review_count,
-        new_count=sum(1 for _, review_type, _ in filtered_rows if review_type == 0),
-        learning_count=sum(1 for _, review_type, _ in filtered_rows if review_type == 2),
-        review_card_count=sum(1 for _, review_type, _ in filtered_rows if review_type == 1),
-        relearn_count=sum(1 for _, review_type, _ in filtered_rows if review_type == 3),
+        distinct_card_count=len({card_id for card_id, _, _, _ in filtered_rows}),
+        new_count=_count_distinct_cards_by_type(filtered_rows, 0),
+        learning_count=_count_distinct_cards_by_type(filtered_rows, 2),
+        review_card_count=_count_distinct_cards_by_type(filtered_rows, 1),
+        relearn_count=_count_distinct_cards_by_type(filtered_rows, 3),
+        total_card_count=len(filtered_cards),
+        started_card_count=len(filtered_started_cards),
         again_count=again_count,
         hard_count=hard_count,
         good_count=good_count,
@@ -116,3 +131,7 @@ def _deck_is_included(deck_name: str, target_decks: tuple[str, ...], excluded_de
     if target_decks and deck_name not in target_decks:
         return False
     return True
+
+
+def _count_distinct_cards_by_type(rows: list[tuple[int, int, int, str]], review_type: int) -> int:
+    return len({card_id for card_id, _, row_review_type, _ in rows if row_review_type == review_type})

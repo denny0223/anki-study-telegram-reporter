@@ -123,6 +123,8 @@ Optional repository variables:
 
 - `TIMEZONE`, default `Asia/Taipei`
 - `DAILY_GOAL_REVIEWS`, default `100`
+- `VOCABULARY_TARGET_COUNT`, default `1600`
+- `EXAM_DATE`, default `2026-05-17`
 - `TARGET_DECKS`
 - `EXCLUDED_DECKS`
 

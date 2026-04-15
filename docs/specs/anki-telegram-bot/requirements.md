@@ -45,6 +45,8 @@ Optional variables:
 - `TELEGRAM_THREAD_ID`
 - `TIMEZONE`, default `Asia/Taipei`
 - `DAILY_GOAL_REVIEWS`, default `100`
+- `VOCABULARY_TARGET_COUNT`, default `1600`
+- `EXAM_DATE`, default `2026-05-17`
 - `TARGET_DECKS`
 - `EXCLUDED_DECKS`
 - `DRY_RUN`, default `true` outside GitHub Actions
@@ -86,10 +88,13 @@ The application must compute daily study metrics from Anki review history.
 Minimum metrics:
 
 - `review_count`
+- `distinct_card_count`
 - `new_count`
 - `learning_count`
 - `review_card_count`
 - `relearn_count`
+- `total_card_count`
+- `started_card_count`
 - `again_count`
 - `hard_count`
 - `good_count`

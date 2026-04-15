@@ -27,6 +27,7 @@ def test_extract_daily_metrics_from_revlog(tmp_path) -> None:
     )
 
     assert metrics.review_count == 3
+    assert metrics.distinct_card_count == 3
     assert metrics.new_count == 1
     assert metrics.learning_count == 1
     assert metrics.review_card_count == 1
@@ -35,6 +36,8 @@ def test_extract_daily_metrics_from_revlog(tmp_path) -> None:
     assert metrics.hard_count == 1
     assert metrics.good_count == 1
     assert metrics.easy_count == 0
+    assert metrics.total_card_count == 5
+    assert metrics.started_card_count == 5
     assert metrics.goal_met is True
 
 

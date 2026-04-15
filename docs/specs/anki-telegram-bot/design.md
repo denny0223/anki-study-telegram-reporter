@@ -122,6 +122,7 @@ Responsibilities:
 - Convert metrics into Traditional Chinese text.
 - Select tone based on performance band.
 - Keep output deterministic for tests.
+- Translate Anki-specific counts into group-friendly goal progress using the vocabulary target and exam date.
 
 Message bands:
 

@@ -52,5 +52,5 @@ def test_report_send_succeeds_with_env(monkeypatch, capsys) -> None:
 
     assert result == 0
     assert len(FakeTelegramClient.messages) == 1
-    assert "Anki 今日戰報 2026-04-15" in FakeTelegramClient.messages[0]
+    assert "會考單字戰報 2026-04-15" in FakeTelegramClient.messages[0]
     assert "Telegram report sent." in capsys.readouterr().out

@@ -23,6 +23,8 @@ class AppConfig:
     report_date: date
     timezone: ZoneInfo
     daily_goal_reviews: int
+    vocabulary_target_count: int
+    exam_date: date
     target_decks: tuple[str, ...]
     excluded_decks: tuple[str, ...]
     anki_username: str | None
@@ -83,6 +85,10 @@ def build_config(
         raise ConfigError(f"Unknown timezone '{timezone_name}'.") from exc
 
     daily_goal = _parse_positive_int(merged.get("DAILY_GOAL_REVIEWS", "100"), "DAILY_GOAL_REVIEWS")
+    vocabulary_target = _parse_positive_int(
+        merged.get("VOCABULARY_TARGET_COUNT", "1600"), "VOCABULARY_TARGET_COUNT"
+    )
+    exam_date = _parse_date(merged.get("EXAM_DATE", "2026-05-17"), "EXAM_DATE")
 
     config = AppConfig(
         source=selected_source,
@@ -90,6 +96,8 @@ def build_config(
         report_date=report_date or date.today(),
         timezone=timezone,
         daily_goal_reviews=daily_goal,
+        vocabulary_target_count=vocabulary_target,
+        exam_date=exam_date,
         target_decks=_parse_csv(merged.get("TARGET_DECKS", "")),
         excluded_decks=_parse_csv(merged.get("EXCLUDED_DECKS", "")),
         anki_username=_blank_to_none(merged.get("ANKI_USERNAME")),
@@ -157,6 +165,13 @@ def _parse_positive_int(value: str, name: str) -> int:
     if parsed <= 0:
         raise ConfigError(f"{name} must be greater than zero.")
     return parsed
+
+
+def _parse_date(value: str, name: str) -> date:
+    try:
+        return date.fromisoformat(value)
+    except ValueError as exc:
+        raise ConfigError(f"{name} must be a date in YYYY-MM-DD format.") from exc
 
 
 def _parse_csv(value: str) -> tuple[str, ...]:

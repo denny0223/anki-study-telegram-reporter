@@ -33,7 +33,11 @@ def _run_report(args: argparse.Namespace) -> int:
             report_date=args.report_date,
         )
         metrics = load_metrics(config)
-        message = render_report(metrics)
+        message = render_report(
+            metrics,
+            vocabulary_target_count=config.vocabulary_target_count,
+            exam_date=config.exam_date,
+        )
     except ConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)
         return 2
