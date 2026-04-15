@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from math import ceil
 
-from .copy_bank import HEADLINES
+from .copy_bank import NUDGES, STATUS_LINES
 from .metrics import StudyMetrics
 
 
@@ -23,67 +23,71 @@ def render_report(
     started = min(metrics.started_card_count, vocabulary_target_count)
     remaining_words = max(vocabulary_target_count - started, 0)
     required_new_per_day = _required_per_day(remaining_words, days_left)
-    progress_percent = round(started / vocabulary_target_count * 100) if vocabulary_target_count else 0
+    progress_pct = round(started / vocabulary_target_count * 100) if vocabulary_target_count else 0
     seed = _seed(metrics, slot)
-    today_push_line = _short_push_line(metrics.new_count, required_new_per_day)
-    headline = _pick_line(HEADLINES[band][slot], seed)
-    supervisor_line = _supervisor_line(supervisor_usernames, seed)
-    friction_line = _short_friction_line(metrics.again_count, metrics.review_count)
-    review_line = _review_line(metrics)
 
-    return "\n".join(
-        [
-            f"會考倒數 {days_left} 天｜單字 {started}/{vocabulary_target_count}（{progress_percent}%）",
-            headline,
-            f"{today_push_line}；{review_line}",
-            friction_line,
-            supervisor_line,
-        ]
-    )
+    bar = _progress_bar(started, vocabulary_target_count)
+    header = f"📊 會考單字日報｜倒數 {days_left} 天"
+    progress = f"[{bar}] {progress_pct}%｜已收錄 {started} / {vocabulary_target_count} 字"
+    activity = f"🎯 {_activity_line(metrics, required_new_per_day)}"
+    status = _status_line(metrics, band, slot, seed)
+    supervisor = _supervisor_line(supervisor_usernames, band, seed)
+
+    return "\n".join([header, progress, activity, status, supervisor])
 
 
-def _short_push_line(new_count: int, required_new_per_day: int) -> str:
-    if required_new_per_day == 0:
-        return "新字清完，今天主線是複習"
-    if new_count >= required_new_per_day:
-        return f"新字 {new_count}，超前 {new_count - required_new_per_day}"
-    return f"新字 {new_count}，還差 {required_new_per_day - new_count}"
+def _progress_bar(current: int, total: int) -> str:
+    if total <= 0:
+        return "░" * 10
+    ratio = min(current / total, 1.0)
+    filled = round(ratio * 10)
+    return "▓" * filled + "░" * (10 - filled)
 
 
-def _review_line(metrics: StudyMetrics) -> str:
+def _activity_line(metrics: StudyMetrics, required_new_per_day: int) -> str:
+    review_part = _review_part(metrics)
+    new_part = _new_word_part(metrics.new_count, required_new_per_day)
+    return f"{review_part}｜{new_part}"
+
+
+def _review_part(metrics: StudyMetrics) -> str:
     if metrics.review_count == 0:
-        return "還沒開刷"
+        return "今天還沒刷題"
     if metrics.goal_met:
-        return f"作答 {metrics.review_count} 次，已達標"
-    return f"作答 {metrics.review_count} 次，差 {metrics.daily_goal_reviews - metrics.review_count}"
+        return f"今天刷 {metrics.review_count} 題 ✅"
+    gap = metrics.daily_goal_reviews - metrics.review_count
+    return f"今天刷 {metrics.review_count} 題，差 {gap} 達標"
 
 
-def _short_friction_line(again_count: int, review_count: int) -> str:
-    if review_count == 0:
-        return "狀態：今日尚未開張，請大家幫會考小專案敲一下門。"
-    again_rate = again_count / review_count
-    if again_rate >= 0.4:
-        return f"卡關 {again_count} 次：不是壞掉，是弱點自己舉手報名。"
-    if again_rate >= 0.2:
-        return f"卡關 {again_count} 次：有幾個單字需要再被溫柔盯一下。"
-    return f"卡關 {again_count} 次：今天手感可以，請繼續保持出勤。"
+def _new_word_part(new_count: int, required_new_per_day: int) -> str:
+    if required_new_per_day == 0:
+        return "新字已全數收錄 ✅"
+    if new_count == 0:
+        return f"新字還沒開，每天要收 {required_new_per_day} 字"
+    if new_count >= required_new_per_day:
+        return f"新收 {new_count} 字 ✅"
+    gap = required_new_per_day - new_count
+    return f"新收 {new_count} 字，差 {gap} 跟上節奏"
 
 
-def _supervisor_line(supervisor_usernames: tuple[str, ...], seed: int) -> str:
+def _status_line(metrics: StudyMetrics, band: str, slot: str, seed: int) -> str:
+    comment = _pick_line(STATUS_LINES[band][slot], seed)
+    if band == "zero":
+        return f"🔴 {comment}"
+    emoji = {"low": "🟡", "met": "🟢", "strong": "🟢"}[band]
+    if metrics.again_count == 0:
+        return f"{emoji} 零失誤，{comment}"
+    pct = round(metrics.again_count / metrics.review_count * 100)
+    return f"{emoji} 答錯 {metrics.again_count} 題（{pct}%），{comment}"
+
+
+def _supervisor_line(supervisor_usernames: tuple[str, ...], band: str, seed: int) -> str:
+    nudge_key = "behind" if band in {"zero", "low"} else "on_track"
+    nudge = _pick_line(NUDGES[nudge_key], seed)
     if not supervisor_usernames:
-        return "群組監工請就位：看到偷懶可以溫柔但堅定地提醒。"
+        return f"🫵 群組監工請就位：{nudge}。"
     tag_text = " ".join(supervisor_usernames)
-    nudges = [
-        "SITCON 監督小隊請就位，看到進度卡住可以溫柔提醒",
-        "請大家幫忙做進度 review，不讓單字債偷偷長大",
-        "麻煩各位路過補一點社群壓力，讓會考小專案保持活躍",
-        "必要時請發一個友善 reminder，台灣社群精神靠大家",
-        "讓會考倒數不要變成無人認領的坑",
-        "請大家幫忙敲碗，單字不會自己走進腦袋",
-        "請籌備團隊發揮社群精神，一起守護這個會考任務",
-        "看到他失蹤可以 ping 一下，這是善意的社群關懷",
-    ]
-    return f"請協助盯 {tag_text}：{_pick_line(nudges, seed)}。"
+    return f"🫵 請幫盯 {tag_text}：{nudge}。"
 
 
 def _required_per_day(remaining_words: int, days_left: int) -> int:

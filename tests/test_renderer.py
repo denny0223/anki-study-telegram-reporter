@@ -25,22 +25,56 @@ def _metrics(review_count: int, goal: int = 100) -> StudyMetrics:
 
 def test_render_zero_band() -> None:
     report = render_report(_metrics(0), report_slot="morning")
-    assert "會考倒數" in report
-    assert "狀態：" in report
+    assert "倒數" in report
+    assert "🔴" in report
+    assert "還沒刷題" in report
 
 
 def test_render_low_band() -> None:
     report = render_report(_metrics(20), report_slot="morning")
-    assert "單字 420/1600（26%）" in report
-    assert "新字 1，還差 36" in report
+    assert "已收錄 420 / 1600 字" in report
+    assert "新收 1 字，差 36 跟上節奏" in report
+    assert "🟡" in report
 
 
 def test_render_met_band() -> None:
-    assert "已達標" in render_report(_metrics(100), report_slot="evening")
+    report = render_report(_metrics(100), report_slot="evening")
+    assert "✅" in report
+    assert "🟢" in report
 
 
 def test_render_strong_band() -> None:
-    assert "作答 220 次" in render_report(_metrics(220), report_slot="evening")
+    report = render_report(_metrics(220), report_slot="evening")
+    assert "刷 220 題" in report
+    assert "🟢" in report
+
+
+def test_render_zero_again() -> None:
+    m = StudyMetrics(
+        report_date=date(2026, 4, 15),
+        review_count=100,
+        distinct_card_count=50,
+        new_count=10,
+        learning_count=5,
+        review_card_count=35,
+        relearn_count=0,
+        total_card_count=1600,
+        started_card_count=420,
+        again_count=0,
+        hard_count=10,
+        good_count=80,
+        easy_count=10,
+        daily_goal_reviews=100,
+    )
+    report = render_report(m, report_slot="evening")
+    assert "零失誤" in report
+
+
+def test_render_has_progress_bar() -> None:
+    report = render_report(_metrics(100), report_slot="morning")
+    assert "▓" in report
+    assert "░" in report
+    assert "26%" in report
 
 
 def test_report_slot_changes_copy_for_same_metrics() -> None:
@@ -55,11 +89,11 @@ def test_report_slot_changes_copy_for_same_metrics() -> None:
 def test_supervisor_usernames_are_tagged() -> None:
     report = render_report(_metrics(20), supervisor_usernames=("@alice", "@bob"))
 
-    assert "請協助盯 @alice @bob" in report
+    assert "請幫盯 @alice @bob" in report
 
 
 def test_report_is_short_enough_for_group_chat() -> None:
     report = render_report(_metrics(220), supervisor_usernames=("@alice",))
 
     assert len(report.splitlines()) == 5
-    assert len(report) < 260
+    assert len(report) < 300
