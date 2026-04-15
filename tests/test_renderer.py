@@ -55,7 +55,7 @@ def test_report_slot_changes_copy_for_same_metrics() -> None:
 def test_supervisor_usernames_are_tagged() -> None:
     report = render_report(_metrics(20), supervisor_usernames=("@alice", "@bob"))
 
-    assert "@alice @bob" in report
+    assert "請協助盯 @alice @bob" in report
 
 
 def test_report_is_short_enough_for_group_chat() -> None:
