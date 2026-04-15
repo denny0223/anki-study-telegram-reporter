@@ -9,6 +9,7 @@ import sys
 from .config import ConfigError, build_config
 from .renderer import render_report
 from .sources import SourceError, load_metrics
+from .telegram import TelegramClient, TelegramError
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -40,8 +41,18 @@ def _run_report(args: argparse.Namespace) -> int:
         print(message)
         return 0
 
-    print("error: Telegram delivery is not implemented yet.", file=sys.stderr)
-    return 2
+    try:
+        TelegramClient(
+            bot_token=config.telegram_bot_token or "",
+            chat_id=config.telegram_chat_id or "",
+            thread_id=config.telegram_thread_id,
+        ).send_message(message)
+    except TelegramError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    print("Telegram report sent.")
+    return 0
 
 
 def _build_parser() -> argparse.ArgumentParser:

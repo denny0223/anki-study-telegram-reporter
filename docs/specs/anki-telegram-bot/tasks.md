@@ -42,10 +42,10 @@ Acceptance:
 
 ## Phase 3: Telegram Delivery
 
-- [ ] Implement Telegram Bot API client.
-- [ ] Support optional `TELEGRAM_THREAD_ID`.
-- [ ] Add dry-run guard.
-- [ ] Add error handling for non-2xx and Telegram API `ok=false` responses.
+- [x] Implement Telegram Bot API client.
+- [x] Support optional `TELEGRAM_THREAD_ID`.
+- [x] Add dry-run guard.
+- [x] Add error handling for non-2xx and Telegram API `ok=false` responses.
 
 Acceptance:
 
