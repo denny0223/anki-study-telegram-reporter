@@ -3,7 +3,11 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from tempfile import TemporaryDirectory
+from pathlib import Path
 
+from .ankiweb import fetch_collection_to_path
+from .collection import extract_daily_metrics
 from .config import AppConfig
 from .metrics import StudyMetrics
 
@@ -16,7 +20,7 @@ def load_metrics(config: AppConfig) -> StudyMetrics:
     if config.source == "mock":
         return mock_metrics(config)
     if config.source == "ankiweb":
-        raise SourceError("AnkiWeb source is not implemented yet. Use --source mock for the current phase.")
+        return ankiweb_metrics(config)
     raise SourceError(f"Unsupported source: {config.source}")
 
 
@@ -35,3 +39,21 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
     )
 
     return replace(base, daily_goal_reviews=config.daily_goal_reviews)
+
+
+def ankiweb_metrics(config: AppConfig) -> StudyMetrics:
+    try:
+        with TemporaryDirectory(prefix="anki-telegram-") as temp_dir:
+            collection_path = fetch_collection_to_path(config=config, workspace=Path(temp_dir))
+            return extract_daily_metrics(
+                collection_path=collection_path,
+                report_date=config.report_date,
+                timezone_name=config.timezone,
+                daily_goal_reviews=config.daily_goal_reviews,
+                target_decks=config.target_decks,
+                excluded_decks=config.excluded_decks,
+            )
+    except Exception as exc:
+        if isinstance(exc, SourceError):
+            raise
+        raise SourceError(str(exc)) from exc

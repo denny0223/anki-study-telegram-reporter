@@ -69,17 +69,17 @@ Acceptance:
 
 ## Phase 5: AnkiWeb Sync PoC
 
-- [ ] Pin and document the Anki package/version used for sync.
-- [ ] Implement temporary profile/workspace creation.
-- [ ] Authenticate with Anki credentials.
-- [ ] Download latest collection into temp storage.
-- [ ] Verify no upload path is executed.
-- [ ] Open the downloaded collection read-only.
-- [ ] Clean up temporary data.
+- [x] Pin and document the Anki package/version used for sync.
+- [x] Implement temporary profile/workspace creation.
+- [x] Authenticate with Anki credentials.
+- [x] Download latest collection into temp storage.
+- [x] Verify no upload path is executed.
+- [x] Open the downloaded collection read-only.
+- [x] Clean up temporary data.
 
 Acceptance:
 
-- A local run can fetch collection data using test Anki credentials.
+- A local run can fetch collection data using test Anki credentials. (Pending live credential verification.)
 - The command fails safely on ambiguous sync conditions.
 - No downloaded collection files remain after normal execution.
 

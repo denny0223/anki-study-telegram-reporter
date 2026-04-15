@@ -43,3 +43,19 @@ The first runnable target will be:
 ```bash
 anki-telegram report --source mock --dry-run
 ```
+
+Run the mock report through `uv`:
+
+```bash
+uv run anki-telegram report --source mock --date 2026-04-15 --dry-run
+```
+
+The AnkiWeb source is wired through the official `anki==25.9.2` package. A live
+AnkiWeb run requires real credentials in `.env` or the environment:
+
+```bash
+uv run anki-telegram report --source ankiweb --dry-run
+```
+
+The sync adapter always requests full-sync downloads with `upload=False`; the
+downloaded collection is opened by the metrics layer in SQLite read-only mode.
