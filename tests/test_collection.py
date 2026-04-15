@@ -28,8 +28,9 @@ def test_extract_daily_metrics_from_revlog(tmp_path) -> None:
 
     assert metrics.review_count == 3
     assert metrics.new_count == 1
-    assert metrics.learning_count == 2
+    assert metrics.learning_count == 1
     assert metrics.review_card_count == 1
+    assert metrics.relearn_count == 0
     assert metrics.again_count == 1
     assert metrics.hard_count == 1
     assert metrics.good_count == 1
@@ -62,6 +63,28 @@ def test_extract_daily_metrics_filters_decks(tmp_path) -> None:
     assert metrics.review_count == 1
     assert metrics.good_count == 1
     assert metrics.again_count == 0
+
+
+def test_extract_daily_metrics_separates_relearning_type(tmp_path) -> None:
+    collection = tmp_path / "collection.anki2"
+    _create_collection(
+        collection,
+        [
+            _review(1, "2026-04-15T08:00:00+08:00", cid=100, ease=1, review_type=3),
+            _review(2, "2026-04-15T09:00:00+08:00", cid=101, ease=3, review_type=2),
+        ],
+    )
+
+    metrics = extract_daily_metrics(
+        collection_path=collection,
+        report_date=date(2026, 4, 15),
+        timezone_name="Asia/Taipei",
+        daily_goal_reviews=10,
+    )
+
+    assert metrics.relearn_count == 1
+    assert metrics.learning_count == 1
+    assert metrics.new_count == 0
 
 
 def test_extract_daily_metrics_reads_newer_decks_table(tmp_path) -> None:

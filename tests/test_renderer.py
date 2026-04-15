@@ -11,6 +11,7 @@ def _metrics(review_count: int, goal: int = 100) -> StudyMetrics:
         new_count=1,
         learning_count=2,
         review_card_count=3,
+        relearn_count=4,
         again_count=1 if review_count else 0,
         hard_count=1 if review_count else 0,
         good_count=max(review_count - 2, 0),

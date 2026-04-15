@@ -25,7 +25,8 @@ def render_report(metrics: StudyMetrics) -> str:
             f"答題數：{metrics.review_count} / {metrics.daily_goal_reviews}（{goal_line}）",
             f"新卡：{metrics.new_count}",
             f"學習中：{metrics.learning_count}",
-            f"複習卡：{metrics.review_card_count}",
+            f"複習：{metrics.review_card_count}",
+            f"重新學習：{metrics.relearn_count}",
             f"按鈕分布：Again {metrics.again_count}、Hard {metrics.hard_count}、Good {metrics.good_count}、Easy {metrics.easy_count}",
             f"大略正確率：{success_percent}%",
         ]

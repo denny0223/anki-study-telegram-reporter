@@ -32,6 +32,7 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
         new_count=18,
         learning_count=24,
         review_card_count=90,
+        relearn_count=0,
         again_count=9,
         hard_count=16,
         good_count=82,

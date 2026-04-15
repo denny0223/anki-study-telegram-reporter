@@ -102,6 +102,13 @@ Responsibilities:
 - Apply deck filters.
 - Convert raw revlog rows into report metrics.
 
+Revlog type mapping:
+
+- `type=0`: new cards.
+- `type=1`: review cards.
+- `type=2`: learning cards.
+- `type=3`: relearning cards.
+
 Notes:
 
 - The Anki `revlog` table is the primary source for review activity.

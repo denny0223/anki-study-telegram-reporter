@@ -8,6 +8,7 @@ def test_report_mock_dry_run_outputs_message(capsys) -> None:
     captured = capsys.readouterr()
     assert "Anki 今日戰報 2026-04-15" in captured.out
     assert "答題數：132 / 100" in captured.out
+    assert "重新學習：0" in captured.out
 
 
 def test_ankiweb_source_requires_credentials_without_local_env(tmp_path, monkeypatch, capsys) -> None:

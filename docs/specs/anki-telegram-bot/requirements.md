@@ -89,6 +89,7 @@ Minimum metrics:
 - `new_count`
 - `learning_count`
 - `review_card_count`
+- `relearn_count`
 - `again_count`
 - `hard_count`
 - `good_count`

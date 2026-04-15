@@ -13,6 +13,7 @@ class StudyMetrics:
     new_count: int
     learning_count: int
     review_card_count: int
+    relearn_count: int
     again_count: int
     hard_count: int
     good_count: int
