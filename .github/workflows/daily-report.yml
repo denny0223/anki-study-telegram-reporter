@@ -119,9 +119,11 @@ jobs:
           SUPERVISOR_USERNAMES: ${{ vars.SUPERVISOR_USERNAMES }}
           TARGET_DECKS: ${{ vars.TARGET_DECKS }}
           EXCLUDED_DECKS: ${{ vars.EXCLUDED_DECKS }}
+          INPUT_SOURCE: ${{ github.event.inputs.source || 'ankiweb' }}
+          INPUT_DATE: ${{ github.event.inputs.report_date }}
         run: |
-          args=(report --source "${{ github.event.inputs.source || 'ankiweb' }}" --send)
-          if [ -n "${{ github.event.inputs.report_date }}" ]; then
-            args+=(--date "${{ github.event.inputs.report_date }}")
+          args=(report --source "$INPUT_SOURCE" --send)
+          if [ -n "$INPUT_DATE" ]; then
+            args+=(--date "$INPUT_DATE")
           fi
           uv run anki-study-telegram-reporter "${args[@]}"

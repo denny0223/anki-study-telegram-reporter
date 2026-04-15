@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-from dataclasses import replace
 from contextlib import nullcontext
 from tempfile import TemporaryDirectory
 from pathlib import Path
@@ -26,7 +25,7 @@ def load_metrics(config: AppConfig) -> StudyMetrics:
 
 
 def mock_metrics(config: AppConfig) -> StudyMetrics:
-    base = StudyMetrics(
+    return StudyMetrics(
         report_date=config.report_date,
         review_count=132,
         distinct_card_count=84,
@@ -42,8 +41,6 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
         easy_count=25,
         daily_goal_reviews=config.daily_goal_reviews,
     )
-
-    return replace(base, daily_goal_reviews=config.daily_goal_reviews)
 
 
 def ankiweb_metrics(config: AppConfig) -> StudyMetrics:

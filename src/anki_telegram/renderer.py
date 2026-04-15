@@ -42,28 +42,6 @@ def render_report(
     )
 
 
-def _today_push_line(new_count: int, required_new_per_day: int, seed: int) -> str:
-    if required_new_per_day == 0:
-        return _pick_line(PUSH_LINES["done"], seed)
-    if new_count == 0:
-        return _pick_line(PUSH_LINES["zero"], seed).format(required=required_new_per_day)
-    if new_count >= required_new_per_day:
-        surplus = new_count - required_new_per_day
-        return _pick_line(PUSH_LINES["ahead"], seed).format(new=new_count, delta=surplus)
-    return _pick_line(PUSH_LINES["behind"], seed).format(new=new_count, delta=required_new_per_day - new_count)
-
-
-def _friction_line(again_count: int, review_count: int, seed: int) -> str:
-    if review_count == 0:
-        return _pick_line(FRICTION_LINES["zero"], seed)
-    again_rate = again_count / review_count
-    if again_rate >= 0.4:
-        return _pick_line(FRICTION_LINES["high"], seed)
-    if again_rate >= 0.2:
-        return _pick_line(FRICTION_LINES["medium"], seed)
-    return _pick_line(FRICTION_LINES["low"], seed)
-
-
 def _short_push_line(new_count: int, required_new_per_day: int) -> str:
     if required_new_per_day == 0:
         return "新字清完，今天主線是複習"
