@@ -17,6 +17,7 @@ from anki import sync_pb2
 from anki.collection import Collection
 
 from .config import AppConfig
+from .retry import retry
 
 
 class AnkiWebSyncError(RuntimeError):
@@ -65,12 +66,7 @@ def fetch_collection_to_path(
     collection = collection_factory(str(collection_path))
 
     try:
-        with redirect_stdout(io.StringIO()):
-            auth = collection.sync_login(config.anki_username, config.anki_password, None)
-            status = collection.sync_status(auth)
-            if status.new_endpoint:
-                auth.endpoint = status.new_endpoint
-            _sync_by_required_state(collection, auth, status.required)
+        retry(lambda: _run_sync(collection, config), retryable=lambda exc: not isinstance(exc, AnkiWebSyncError))
     except Exception as exc:
         if isinstance(exc, AnkiWebSyncError):
             raise
@@ -82,6 +78,15 @@ def fetch_collection_to_path(
         raise AnkiWebSyncError("AnkiWeb sync finished but no collection file was created.")
 
     return collection_path
+
+
+def _run_sync(collection: AnkiCollection, config: AppConfig) -> None:
+    with redirect_stdout(io.StringIO()):
+        auth = collection.sync_login(config.anki_username or "", config.anki_password or "", None)
+        status = collection.sync_status(auth)
+        if status.new_endpoint:
+            auth.endpoint = status.new_endpoint
+        _sync_by_required_state(collection, auth, status.required)
 
 
 def _sync_by_required_state(collection: AnkiCollection, auth, required: int) -> None:

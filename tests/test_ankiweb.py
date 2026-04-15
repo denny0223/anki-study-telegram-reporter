@@ -84,3 +84,36 @@ def test_fetch_collection_full_sync_downloads_without_upload(tmp_path) -> None:
     assert ("reopen", True) in calls
     assert ("close", False) in calls
     assert FakeCollection.instances[0].auth.endpoint == "https://sync.example"
+
+
+class FlakyCollection(FakeCollection):
+    attempts = 0
+
+    def sync_login(self, username: str, password: str, endpoint: str | None):
+        FlakyCollection.attempts += 1
+        if FlakyCollection.attempts == 1:
+            raise RuntimeError("temporary sync outage")
+        return super().sync_login(username, password, endpoint)
+
+
+def test_fetch_collection_retries_transient_sync_errors(tmp_path, monkeypatch) -> None:
+    FakeCollection.instances = []
+    FlakyCollection.attempts = 0
+    monkeypatch.setattr("anki_telegram.retry.time.sleep", lambda _: None)
+    config = build_config(
+        source="ankiweb",
+        dry_run=True,
+        send=False,
+        report_date=date(2026, 4, 15),
+        env={"ANKI_USERNAME": "user", "ANKI_PASSWORD": "pass"},
+        dotenv={},
+    )
+
+    collection_path = fetch_collection_to_path(
+        config=config,
+        workspace=tmp_path,
+        collection_factory=FlakyCollection,
+    )
+
+    assert collection_path.exists()
+    assert FlakyCollection.attempts == 2

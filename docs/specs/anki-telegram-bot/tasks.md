@@ -101,7 +101,7 @@ Acceptance:
 
 - [x] Add structured logging with secret redaction.
 - [x] Add duplicate-send prevention or document MVP behavior.
-- [ ] Add retry/backoff for transient network failures.
+- [x] Add retry/backoff for transient network failures.
 - [x] Add failure-mode documentation.
 
 ## Phase 8: Local Verification Tools

@@ -1,6 +1,6 @@
 import pytest
 
-from anki_telegram.telegram import TelegramClient, TelegramError
+from anki_telegram.telegram import TelegramClient, TelegramError, TelegramHttpError
 
 
 def test_send_message_posts_expected_payload() -> None:
@@ -40,3 +40,38 @@ def test_send_message_raises_on_ok_false() -> None:
 
     with pytest.raises(TelegramError, match="chat not found"):
         client.send_message("hello")
+
+
+def test_send_message_retries_retryable_http_errors() -> None:
+    calls = 0
+    sleeps = []
+
+    def fake_post(url: str, payload: dict[str, object]) -> dict[str, object]:
+        nonlocal calls
+        calls += 1
+        if calls < 3:
+            raise TelegramHttpError(502, "bad gateway")
+        return {"ok": True}
+
+    client = TelegramClient(bot_token="token", chat_id="-100123", http_post=fake_post, sleeper=sleeps.append)
+
+    client.send_message("hello")
+
+    assert calls == 3
+    assert sleeps == [1.0, 2.0]
+
+
+def test_send_message_does_not_retry_non_retryable_http_errors() -> None:
+    calls = 0
+
+    def fake_post(url: str, payload: dict[str, object]) -> dict[str, object]:
+        nonlocal calls
+        calls += 1
+        raise TelegramHttpError(400, "bad request")
+
+    client = TelegramClient(bot_token="token", chat_id="-100123", http_post=fake_post, sleeper=lambda _: None)
+
+    with pytest.raises(TelegramHttpError, match="bad request"):
+        client.send_message("hello")
+
+    assert calls == 1

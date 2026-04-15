@@ -2,11 +2,14 @@
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from dataclasses import dataclass
 import json
 from typing import Protocol
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
+
+from .retry import retry
 
 
 class TelegramError(RuntimeError):
@@ -18,12 +21,25 @@ class HttpPost(Protocol):
         ...
 
 
+class TelegramHttpError(TelegramError):
+    """Raised when Telegram returns a retryable HTTP status."""
+
+    def __init__(self, status_code: int, details: str) -> None:
+        super().__init__(f"Telegram HTTP {status_code}: {details}")
+        self.status_code = status_code
+
+
+class TelegramTransportError(TelegramError):
+    """Raised when Telegram cannot be reached."""
+
+
 @dataclass(frozen=True)
 class TelegramClient:
     bot_token: str
     chat_id: str
     thread_id: str | None = None
     http_post: HttpPost | None = None
+    sleeper: Callable[[float], None] | None = None
 
     def send_message(self, text: str) -> None:
         payload: dict[str, object] = {
@@ -35,7 +51,12 @@ class TelegramClient:
             payload["message_thread_id"] = self.thread_id
 
         url = f"https://api.telegram.org/bot{self.bot_token}/sendMessage"
-        response = (self.http_post or _post_json)(url, payload)
+        post = self.http_post or _post_json
+        response = retry(
+            lambda: post(url, payload),
+            sleeper=self.sleeper or _sleep,
+            retryable=_is_retryable_telegram_error,
+        )
 
         if response.get("ok") is not True:
             description = response.get("description") or "Telegram API returned ok=false."
@@ -56,9 +77,9 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
             response_body = response.read().decode("utf-8")
     except HTTPError as exc:
         details = exc.read().decode("utf-8", errors="replace")
-        raise TelegramError(f"Telegram HTTP {exc.code}: {details}") from exc
+        raise TelegramHttpError(exc.code, details) from exc
     except URLError as exc:
-        raise TelegramError(f"Telegram request failed: {exc.reason}") from exc
+        raise TelegramTransportError(f"Telegram request failed: {exc.reason}") from exc
 
     try:
         parsed = json.loads(response_body)
@@ -68,3 +89,17 @@ def _post_json(url: str, payload: dict[str, object]) -> dict[str, object]:
     if not isinstance(parsed, dict):
         raise TelegramError("Telegram returned an unexpected response.")
     return parsed
+
+
+def _is_retryable_telegram_error(exc: Exception) -> bool:
+    if isinstance(exc, TelegramTransportError):
+        return True
+    if isinstance(exc, TelegramHttpError):
+        return exc.status_code == 429 or exc.status_code >= 500
+    return False
+
+
+def _sleep(seconds: float) -> None:
+    import time
+
+    time.sleep(seconds)
