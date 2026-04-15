@@ -1,6 +1,6 @@
 import pytest
 
-from anki_telegram.retry import retry
+from anki_study_telegram_reporter.retry import retry
 
 
 def test_retry_eventually_returns() -> None:

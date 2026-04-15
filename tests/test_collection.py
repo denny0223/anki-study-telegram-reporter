@@ -3,7 +3,7 @@ import json
 import sqlite3
 from zoneinfo import ZoneInfo
 
-from anki_telegram.collection import extract_daily_metrics
+from anki_study_telegram_reporter.collection import extract_daily_metrics
 
 
 def test_extract_daily_metrics_from_revlog(tmp_path) -> None:

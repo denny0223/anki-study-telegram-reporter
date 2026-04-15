@@ -1,7 +1,7 @@
 from datetime import date
 
-from anki_telegram.metrics import StudyMetrics
-from anki_telegram.renderer import render_report
+from anki_study_telegram_reporter.metrics import StudyMetrics
+from anki_study_telegram_reporter.renderer import render_report
 
 
 def _metrics(review_count: int, goal: int = 100) -> StudyMetrics:

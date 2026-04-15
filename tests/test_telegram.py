@@ -1,6 +1,6 @@
 import pytest
 
-from anki_telegram.telegram import TelegramClient, TelegramError, TelegramHttpError
+from anki_study_telegram_reporter.telegram import TelegramClient, TelegramError, TelegramHttpError
 
 
 def test_send_message_posts_expected_payload() -> None:

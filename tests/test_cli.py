@@ -1,4 +1,4 @@
-from anki_telegram.cli import main
+from anki_study_telegram_reporter.cli import main
 
 
 def test_report_mock_dry_run_outputs_message(capsys) -> None:

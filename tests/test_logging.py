@@ -1,4 +1,4 @@
-from anki_telegram.logging import redact
+from anki_study_telegram_reporter.logging import redact
 
 
 def test_redact_replaces_known_secrets() -> None:

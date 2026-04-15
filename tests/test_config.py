@@ -2,7 +2,7 @@ from datetime import date
 
 import pytest
 
-from anki_telegram.config import ConfigError, build_config
+from anki_study_telegram_reporter.config import ConfigError, build_config
 
 
 def test_mock_dry_run_does_not_require_secrets() -> None:

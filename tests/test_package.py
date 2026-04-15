@@ -1,4 +1,4 @@
-from anki_telegram import __version__
+from anki_study_telegram_reporter import __version__
 
 
 def test_package_exposes_version() -> None:

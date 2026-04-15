@@ -3,8 +3,8 @@ from pathlib import Path
 
 from anki import sync_pb2
 
-from anki_telegram.ankiweb import fetch_collection_to_path
-from anki_telegram.config import build_config
+from anki_study_telegram_reporter.ankiweb import fetch_collection_to_path
+from anki_study_telegram_reporter.config import build_config
 
 
 class FakeStatus:
@@ -99,7 +99,7 @@ class FlakyCollection(FakeCollection):
 def test_fetch_collection_retries_transient_sync_errors(tmp_path, monkeypatch) -> None:
     FakeCollection.instances = []
     FlakyCollection.attempts = 0
-    monkeypatch.setattr("anki_telegram.retry.time.sleep", lambda _: None)
+    monkeypatch.setattr("anki_study_telegram_reporter.retry.time.sleep", lambda _: None)
     config = build_config(
         source="ankiweb",
         dry_run=True,

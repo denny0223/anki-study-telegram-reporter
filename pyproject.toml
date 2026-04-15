@@ -22,8 +22,8 @@ dev = [
 ]
 
 [project.scripts]
-anki-study-telegram-reporter = "anki_telegram.cli:main"
-anki-telegram = "anki_telegram.cli:main"
+anki-study-telegram-reporter = "anki_study_telegram_reporter.cli:main"
+anki-telegram = "anki_study_telegram_reporter.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

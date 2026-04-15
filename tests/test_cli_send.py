@@ -1,4 +1,4 @@
-from anki_telegram import cli
+from anki_study_telegram_reporter import cli
 
 
 class FakeTelegramClient:
