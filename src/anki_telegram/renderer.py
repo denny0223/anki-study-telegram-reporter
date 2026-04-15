@@ -82,13 +82,13 @@ def _review_line(metrics: StudyMetrics) -> str:
 
 def _short_friction_line(again_count: int, review_count: int) -> str:
     if review_count == 0:
-        return "狀態：今日尚未開張，請各位路過敲碗。"
+        return "狀態：今日尚未開張，請大家幫會考小專案開第一個 issue。"
     again_rate = again_count / review_count
     if again_rate >= 0.4:
-        return f"卡關 {again_count} 次：不是笨，是弱點自己舉手。"
+        return f"卡關 {again_count} 次：不是壞掉，是弱點主動開 issue。"
     if again_rate >= 0.2:
-        return f"卡關 {again_count} 次：有幾個單字在裝熟。"
-    return f"卡關 {again_count} 次：今天手感可以，請保持出勤。"
+        return f"卡關 {again_count} 次：有幾個單字需要 code review。"
+    return f"卡關 {again_count} 次：今天手感可以，請持續 deploy。"
 
 
 def _supervisor_line(supervisor_usernames: tuple[str, ...], seed: int) -> str:
@@ -96,12 +96,14 @@ def _supervisor_line(supervisor_usernames: tuple[str, ...], seed: int) -> str:
         return "群組監工請就位：看到偷懶可以溫柔但堅定地提醒。"
     tag_text = " ".join(supervisor_usernames)
     nudges = [
-        "請大家協助盯場，看到他失蹤就召喚一下",
-        "今日監督任務啟動，請路過幫忙補一點壓力",
-        "麻煩各位一起見證，不讓單字債偷偷長大",
-        "請大家幫忙盯進度，必要時可以合理催促",
-        "監督小隊集合，今天不要讓倒數日曆白忙",
-        "請大家幫忙敲碗，單字不會自己走進腦袋",
+        "SITCON 監工小隊請就位，看到進度卡住可以溫柔催 PR",
+        "請大家幫國中生小專案做進度 review，不讓單字債偷偷長大",
+        "麻煩各位路過補一點社群壓力，今天不要讓 pipeline 閒置",
+        "請協助盯場，必要時發一個友善 reminder issue",
+        "監督任務啟動，讓會考倒數不要成為 unattended alert",
+        "請大家幫忙敲碗，單字不會自己 merge 進腦袋",
+        "請籌備團隊發揮社群精神，一起守護這個會考 release",
+        "看到他失蹤可以 ping 一下，這是善意的 uptime monitoring",
     ]
     return f"{tag_text} {_pick_line(nudges, seed)}。"
 
