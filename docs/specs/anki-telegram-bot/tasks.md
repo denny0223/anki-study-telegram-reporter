@@ -79,17 +79,17 @@ Acceptance:
 
 Acceptance:
 
-- A local run can fetch collection data using test Anki credentials. (Pending live credential verification.)
+- A local run can fetch collection data using test Anki credentials.
 - The command fails safely on ambiguous sync conditions.
 - No downloaded collection files remain after normal execution.
 
 ## Phase 6: GitHub Actions
 
-- [ ] Add workflow with `schedule` and `workflow_dispatch`.
-- [ ] Add test job.
-- [ ] Add mock dry-run job.
-- [ ] Add production send job using secrets.
-- [ ] Document secret setup.
+- [x] Add workflow with `schedule` and `workflow_dispatch`.
+- [x] Add test job.
+- [x] Add mock dry-run job.
+- [x] Add production send job using secrets.
+- [x] Document secret setup.
 
 Acceptance:
 

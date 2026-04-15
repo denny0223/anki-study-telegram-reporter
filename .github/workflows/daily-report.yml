@@ -1,0 +1,122 @@
+name: Daily Anki Telegram Report
+
+on:
+  schedule:
+    # 23:00 Asia/Taipei.
+    - cron: "0 15 * * *"
+  workflow_dispatch:
+    inputs:
+      send:
+        description: "Send to Telegram instead of dry-run"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      source:
+        description: "Study data source"
+        required: false
+        default: "ankiweb"
+        type: choice
+        options:
+          - "mock"
+          - "ankiweb"
+      report_date:
+        description: "Optional report date in YYYY-MM-DD"
+        required: false
+        default: ""
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.7.2"
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync --locked --extra dev
+
+      - name: Run tests
+        run: uv run pytest
+
+  mock-dry-run:
+    name: Mock dry-run
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.7.2"
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync --locked --extra dev
+
+      - name: Generate mock report
+        run: uv run anki-telegram report --source mock --dry-run
+
+  send-report:
+    name: Send report
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'schedule' || github.event.inputs.send == 'true'
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "0.7.2"
+          enable-cache: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: ".python-version"
+
+      - name: Install dependencies
+        run: uv sync --locked
+
+      - name: Send report
+        env:
+          ANKI_USERNAME: ${{ secrets.ANKI_USERNAME }}
+          ANKI_PASSWORD: ${{ secrets.ANKI_PASSWORD }}
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          TELEGRAM_THREAD_ID: ${{ secrets.TELEGRAM_THREAD_ID }}
+          TIMEZONE: ${{ vars.TIMEZONE || 'Asia/Taipei' }}
+          DAILY_GOAL_REVIEWS: ${{ vars.DAILY_GOAL_REVIEWS || '100' }}
+          TARGET_DECKS: ${{ vars.TARGET_DECKS }}
+          EXCLUDED_DECKS: ${{ vars.EXCLUDED_DECKS }}
+        run: |
+          args=(report --source "${{ github.event.inputs.source || 'ankiweb' }}" --send)
+          if [ -n "${{ github.event.inputs.report_date }}" ]; then
+            args+=(--date "${{ github.event.inputs.report_date }}")
+          fi
+          uv run anki-telegram "${args[@]}"

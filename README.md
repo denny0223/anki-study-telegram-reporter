@@ -10,7 +10,8 @@ Development follows Spec-Driven Development. Start with the spec documents:
 
 ## Current Status
 
-Phase 0 implementation: project foundation.
+MVP implementation in progress. Local mock reports, Telegram delivery, read-only
+Anki collection metrics, and AnkiWeb collection download are implemented.
 
 The intended production workflow is:
 
@@ -20,42 +21,93 @@ The intended production workflow is:
 4. The app generates a Traditional Chinese report.
 5. The app sends the report through Telegram Bot API.
 
-The AnkiWeb collection sync implementation is treated as the main technical risk and will be validated separately before production use.
+The AnkiWeb collection sync path has been verified locally with a dry-run. It
+downloads to temporary storage, requests full-downloads with `upload=False`, and
+opens the downloaded collection through SQLite read-only mode.
 
 ## Local Development
 
-Create a virtual environment and install development dependencies:
+Install dependencies:
 
 ```bash
-python -m venv .venv
-. .venv/bin/activate
-python -m pip install -e ".[dev]"
+uv sync --extra dev
 ```
 
 Run tests:
 
 ```bash
-pytest
+uv run pytest
 ```
 
-The first runnable target will be:
-
-```bash
-anki-telegram report --source mock --dry-run
-```
-
-Run the mock report through `uv`:
+Run a mock report:
 
 ```bash
 uv run anki-telegram report --source mock --date 2026-04-15 --dry-run
 ```
 
-The AnkiWeb source is wired through the official `anki==25.9.2` package. A live
-AnkiWeb run requires real credentials in `.env` or the environment:
+Run a local AnkiWeb dry-run:
 
 ```bash
+cp .env.example .env
 uv run anki-telegram report --source ankiweb --dry-run
 ```
 
-The sync adapter always requests full-sync downloads with `upload=False`; the
-downloaded collection is opened by the metrics layer in SQLite read-only mode.
+The `.env` file must contain at least:
+
+```env
+ANKI_USERNAME=
+ANKI_PASSWORD=
+```
+
+For a real Telegram send, also set:
+
+```env
+TELEGRAM_BOT_TOKEN=
+TELEGRAM_CHAT_ID=
+```
+
+Then run:
+
+```bash
+uv run anki-telegram report --source ankiweb --send
+```
+
+## GitHub Actions
+
+The workflow is defined at `.github/workflows/daily-report.yml`.
+
+It runs:
+
+- tests on every workflow run
+- a mock dry-run without secrets
+- the production report on the daily schedule or when manually triggered with `send=true`
+
+The default schedule is 23:00 Asia/Taipei:
+
+```yaml
+cron: "0 15 * * *"
+```
+
+Required repository secrets:
+
+- `ANKI_USERNAME`
+- `ANKI_PASSWORD`
+- `TELEGRAM_BOT_TOKEN`
+- `TELEGRAM_CHAT_ID`
+
+Optional repository secret:
+
+- `TELEGRAM_THREAD_ID`
+
+Optional repository variables:
+
+- `TIMEZONE`, default `Asia/Taipei`
+- `DAILY_GOAL_REVIEWS`, default `100`
+- `TARGET_DECKS`
+- `EXCLUDED_DECKS`
+
+Manual dispatch inputs:
+
+- `send`: set to `true` to send to Telegram; default is `false`
+- `source`: `mock` or `ankiweb`; default is `ankiweb`
+- `report_date`: optional `YYYY-MM-DD`
