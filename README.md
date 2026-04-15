@@ -127,6 +127,7 @@ Optional repository variables:
 - `VOCABULARY_TARGET_COUNT`, default `1600`
 - `EXAM_DATE`, default `2026-05-17`
 - `REPORT_SLOT`, default `auto`; use `morning` or `evening` to force copy style
+- `SUPERVISOR_USERNAMES`, comma-separated Telegram usernames to tag, with or without `@`
 - `TARGET_DECKS`
 - `EXCLUDED_DECKS`
 

@@ -25,14 +25,14 @@ def _metrics(review_count: int, goal: int = 100) -> StudyMetrics:
 
 def test_render_zero_band() -> None:
     report = render_report(_metrics(0), report_slot="morning")
-    assert "會考單字戰報" in report
+    assert "會考倒數" in report
     assert "狀態：" in report
 
 
 def test_render_low_band() -> None:
     report = render_report(_metrics(20), report_slot="morning")
-    assert "1600 單字進度：已開始 420 個（26%），剩 1180 個" in report
-    assert "建議節奏：每天至少新增 37 個單字" in report
+    assert "單字 420/1600（26%）" in report
+    assert "新字 1，還差 36" in report
 
 
 def test_render_met_band() -> None:
@@ -40,7 +40,7 @@ def test_render_met_band() -> None:
 
 
 def test_render_strong_band() -> None:
-    assert "總共作答 220 次" in render_report(_metrics(220), report_slot="evening")
+    assert "作答 220 次" in render_report(_metrics(220), report_slot="evening")
 
 
 def test_report_slot_changes_copy_for_same_metrics() -> None:
@@ -50,3 +50,16 @@ def test_report_slot_changes_copy_for_same_metrics() -> None:
     evening = render_report(metrics, report_slot="evening")
 
     assert morning != evening
+
+
+def test_supervisor_usernames_are_tagged() -> None:
+    report = render_report(_metrics(20), supervisor_usernames=("@alice", "@bob"))
+
+    assert "@alice @bob" in report
+
+
+def test_report_is_short_enough_for_group_chat() -> None:
+    report = render_report(_metrics(220), supervisor_usernames=("@alice",))
+
+    assert len(report.splitlines()) == 5
+    assert len(report) < 260

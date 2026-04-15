@@ -6,9 +6,9 @@ def test_report_mock_dry_run_outputs_message(capsys) -> None:
 
     assert result == 0
     captured = capsys.readouterr()
-    assert "會考單字戰報 2026-04-15" in captured.out
-    assert "距離 2026-05-17 國中會考：倒數 32 天" in captured.out
-    assert "今天碰過：84 個單字，總共作答 132 次" in captured.out
+    assert "會考倒數 32 天" in captured.out
+    assert "單字 420/1600" in captured.out
+    assert "作答 132 次，已達標" in captured.out
 
 
 def test_ankiweb_source_requires_credentials_without_local_env(tmp_path, monkeypatch, capsys) -> None:

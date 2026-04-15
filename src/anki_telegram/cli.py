@@ -38,6 +38,7 @@ def _run_report(args: argparse.Namespace) -> int:
             vocabulary_target_count=config.vocabulary_target_count,
             exam_date=config.exam_date,
             report_slot=config.report_slot,
+            supervisor_usernames=config.supervisor_usernames,
         )
     except ConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)

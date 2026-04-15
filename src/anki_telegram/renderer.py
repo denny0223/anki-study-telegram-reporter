@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from math import ceil
 
-from .copy_bank import CLOSERS, FRICTION_LINES, HEADLINES, PUSH_LINES
+from .copy_bank import HEADLINES
 from .metrics import StudyMetrics
 
 
@@ -15,6 +15,7 @@ def render_report(
     vocabulary_target_count: int = 1600,
     exam_date: date = date(2026, 5, 17),
     report_slot: str = "auto",
+    supervisor_usernames: tuple[str, ...] = (),
 ) -> str:
     band = metrics.performance_band
     slot = _resolve_slot(report_slot, metrics)
@@ -24,29 +25,19 @@ def render_report(
     required_new_per_day = _required_per_day(remaining_words, days_left)
     progress_percent = round(started / vocabulary_target_count * 100) if vocabulary_target_count else 0
     seed = _seed(metrics, slot)
-    today_push_line = _today_push_line(metrics.new_count, required_new_per_day, seed)
+    today_push_line = _short_push_line(metrics.new_count, required_new_per_day)
     headline = _pick_line(HEADLINES[band][slot], seed)
-
-    goal_line = "已達標" if metrics.goal_met else f"未達標，還差 {metrics.daily_goal_reviews - metrics.review_count} 題"
-    success_percent = round(metrics.success_rate * 100)
-    friction_line = _friction_line(metrics.again_count, metrics.review_count, seed)
-    closer = _pick_line(CLOSERS[slot], seed + metrics.review_count)
+    supervisor_line = _supervisor_line(supervisor_usernames, seed)
+    friction_line = _short_friction_line(metrics.again_count, metrics.review_count)
+    review_line = _review_line(metrics)
 
     return "\n".join(
         [
-            f"會考單字戰報 {metrics.report_date.isoformat()}",
+            f"會考倒數 {days_left} 天｜單字 {started}/{vocabulary_target_count}（{progress_percent}%）",
             headline,
-            "",
-            f"距離 2026-05-17 國中會考：倒數 {days_left} 天",
-            f"1600 單字進度：已開始 {started} 個（{progress_percent}%），剩 {remaining_words} 個",
-            f"建議節奏：每天至少新增 {required_new_per_day} 個單字",
-            today_push_line,
-            "",
-            f"今天碰過：{metrics.distinct_card_count} 個單字，總共作答 {metrics.review_count} 次（{goal_line}）",
-            f"今天新開：{metrics.new_count} 個；複習：{metrics.review_card_count} 個；卡回學習區：{metrics.relearn_count} 個",
-            f"順手度：{success_percent}%；卡住重來：{metrics.again_count} 次",
+            f"{today_push_line}；{review_line}",
             friction_line,
-            closer,
+            supervisor_line,
         ]
     )
 
@@ -71,6 +62,48 @@ def _friction_line(again_count: int, review_count: int, seed: int) -> str:
     if again_rate >= 0.2:
         return _pick_line(FRICTION_LINES["medium"], seed)
     return _pick_line(FRICTION_LINES["low"], seed)
+
+
+def _short_push_line(new_count: int, required_new_per_day: int) -> str:
+    if required_new_per_day == 0:
+        return "新字清完，今天主線是複習"
+    if new_count >= required_new_per_day:
+        return f"新字 {new_count}，超前 {new_count - required_new_per_day}"
+    return f"新字 {new_count}，還差 {required_new_per_day - new_count}"
+
+
+def _review_line(metrics: StudyMetrics) -> str:
+    if metrics.review_count == 0:
+        return "還沒開刷"
+    if metrics.goal_met:
+        return f"作答 {metrics.review_count} 次，已達標"
+    return f"作答 {metrics.review_count} 次，差 {metrics.daily_goal_reviews - metrics.review_count}"
+
+
+def _short_friction_line(again_count: int, review_count: int) -> str:
+    if review_count == 0:
+        return "狀態：今日尚未開張，請各位路過敲碗。"
+    again_rate = again_count / review_count
+    if again_rate >= 0.4:
+        return f"卡關 {again_count} 次：不是笨，是弱點自己舉手。"
+    if again_rate >= 0.2:
+        return f"卡關 {again_count} 次：有幾個單字在裝熟。"
+    return f"卡關 {again_count} 次：今天手感可以，請保持出勤。"
+
+
+def _supervisor_line(supervisor_usernames: tuple[str, ...], seed: int) -> str:
+    if not supervisor_usernames:
+        return "群組監工請就位：看到偷懶可以溫柔但堅定地提醒。"
+    tag_text = " ".join(supervisor_usernames)
+    nudges = [
+        "請大家協助盯場，看到他失蹤就召喚一下",
+        "今日監督任務啟動，請路過幫忙補一點壓力",
+        "麻煩各位一起見證，不讓單字債偷偷長大",
+        "請大家幫忙盯進度，必要時可以合理催促",
+        "監督小隊集合，今天不要讓倒數日曆白忙",
+        "請大家幫忙敲碗，單字不會自己走進腦袋",
+    ]
+    return f"{tag_text} {_pick_line(nudges, seed)}。"
 
 
 def _required_per_day(remaining_words: int, days_left: int) -> int:

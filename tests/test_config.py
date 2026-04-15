@@ -21,6 +21,7 @@ def test_mock_dry_run_does_not_require_secrets() -> None:
     assert config.vocabulary_target_count == 1600
     assert config.exam_date == date(2026, 5, 17)
     assert config.report_slot == "auto"
+    assert config.supervisor_usernames == ()
 
 
 def test_send_requires_telegram_secrets() -> None:
@@ -46,6 +47,7 @@ def test_env_values_are_used() -> None:
             "VOCABULARY_TARGET_COUNT": "1200",
             "EXAM_DATE": "2026-05-01",
             "REPORT_SLOT": "evening",
+            "SUPERVISOR_USERNAMES": "alice, @bob",
             "TARGET_DECKS": "Japanese, English",
         },
         dotenv={},
@@ -55,6 +57,7 @@ def test_env_values_are_used() -> None:
     assert config.vocabulary_target_count == 1200
     assert config.exam_date == date(2026, 5, 1)
     assert config.report_slot == "evening"
+    assert config.supervisor_usernames == ("@alice", "@bob")
     assert config.target_decks == ("Japanese", "English")
 
 

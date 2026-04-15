@@ -27,6 +27,7 @@ class AppConfig:
     vocabulary_target_count: int
     exam_date: date
     report_slot: str
+    supervisor_usernames: tuple[str, ...]
     target_decks: tuple[str, ...]
     excluded_decks: tuple[str, ...]
     anki_username: str | None
@@ -106,6 +107,7 @@ def build_config(
         vocabulary_target_count=vocabulary_target,
         exam_date=exam_date,
         report_slot=report_slot,
+        supervisor_usernames=_parse_usernames(merged.get("SUPERVISOR_USERNAMES", "")),
         target_decks=_parse_csv(merged.get("TARGET_DECKS", "")),
         excluded_decks=_parse_csv(merged.get("EXCLUDED_DECKS", "")),
         anki_username=_blank_to_none(merged.get("ANKI_USERNAME")),
@@ -184,6 +186,15 @@ def _parse_date(value: str, name: str) -> date:
 
 def _parse_csv(value: str) -> tuple[str, ...]:
     return tuple(part.strip() for part in value.split(",") if part.strip())
+
+
+def _parse_usernames(value: str) -> tuple[str, ...]:
+    usernames: list[str] = []
+    for item in _parse_csv(value):
+        normalized = item.removeprefix("@").strip()
+        if normalized:
+            usernames.append("@" + normalized)
+    return tuple(usernames)
 
 
 def _blank_to_none(value: str | None) -> str | None:

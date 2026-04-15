@@ -48,6 +48,7 @@ Optional variables:
 - `VOCABULARY_TARGET_COUNT`, default `1600`
 - `EXAM_DATE`, default `2026-05-17`
 - `REPORT_SLOT`, one of `auto`, `morning`, or `evening`, default `auto`
+- `SUPERVISOR_USERNAMES`, comma-separated Telegram usernames to tag
 - `TARGET_DECKS`
 - `EXCLUDED_DECKS`
 - `DRY_RUN`, default `true` outside GitHub Actions
