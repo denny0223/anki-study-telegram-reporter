@@ -7,6 +7,7 @@ from datetime import date
 import sys
 
 from .config import ConfigError, build_config
+from .logging import redact
 from .renderer import render_report
 from .sources import SourceError, load_metrics
 from .telegram import TelegramClient, TelegramError
@@ -33,8 +34,12 @@ def _run_report(args: argparse.Namespace) -> int:
         )
         metrics = load_metrics(config)
         message = render_report(metrics)
-    except (ConfigError, SourceError) as exc:
+    except ConfigError as exc:
         print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+    except SourceError as exc:
+        print(f"error: {redact(str(exc), _known_secrets())}", file=sys.stderr)
         return 2
 
     if config.dry_run:
@@ -48,7 +53,7 @@ def _run_report(args: argparse.Namespace) -> int:
             thread_id=config.telegram_thread_id,
         ).send_message(message)
     except TelegramError as exc:
-        print(f"error: {exc}", file=sys.stderr)
+        print(f"error: {redact(str(exc), _known_secrets())}", file=sys.stderr)
         return 2
 
     print("Telegram report sent.")
@@ -68,6 +73,15 @@ def _build_parser() -> argparse.ArgumentParser:
     send_mode.add_argument("--send", action="store_true", help="Send the message to Telegram.")
 
     return parser
+
+
+def _known_secrets() -> list[str | None]:
+    import os
+
+    return [
+        os.environ.get("ANKI_PASSWORD"),
+        os.environ.get("TELEGRAM_BOT_TOKEN"),
+    ]
 
 
 if __name__ == "__main__":

@@ -99,10 +99,10 @@ Acceptance:
 
 ## Phase 7: Hardening
 
-- [ ] Add structured logging with secret redaction.
-- [ ] Add duplicate-send prevention or document MVP behavior.
+- [x] Add structured logging with secret redaction.
+- [x] Add duplicate-send prevention or document MVP behavior.
 - [ ] Add retry/backoff for transient network failures.
-- [ ] Add failure-mode documentation.
+- [x] Add failure-mode documentation.
 
 Acceptance:
 

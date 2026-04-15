@@ -111,3 +111,24 @@ Manual dispatch inputs:
 - `send`: set to `true` to send to Telegram; default is `false`
 - `source`: `mock` or `ankiweb`; default is `ankiweb`
 - `report_date`: optional `YYYY-MM-DD`
+
+## Failure Modes
+
+Common failures:
+
+- Missing `ANKI_USERNAME` or `ANKI_PASSWORD`: the AnkiWeb source cannot run.
+- Missing `TELEGRAM_BOT_TOKEN` or `TELEGRAM_CHAT_ID`: real sends cannot run.
+- AnkiWeb requests full upload: the app refuses to upload from automation.
+- Telegram API returns `ok=false`: the command exits non-zero and reports the Telegram error.
+
+The app redacts known secret values from command-level errors. Avoid enabling
+extra debug logging around third-party libraries in public CI logs.
+
+## Duplicate Sends
+
+MVP behavior allows duplicate sends when a workflow is manually re-run with
+`send=true`, or when the scheduled job is retried. This is intentional for the
+first production version so failed deliveries can be retried manually.
+
+A future hardening step can store a per-date send marker in GitHub Actions cache
+and require an explicit `FORCE_SEND=true` override.
