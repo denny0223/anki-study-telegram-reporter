@@ -16,10 +16,10 @@ Acceptance:
 
 ## Phase 1: CLI and Configuration
 
-- [ ] Add `report` CLI command.
-- [ ] Implement env and `.env` loading.
-- [ ] Implement config validation for dry-run, mock, ankiweb, and Telegram send modes.
-- [ ] Add `--source`, `--date`, `--dry-run`, and `--send` flags.
+- [x] Add `report` CLI command.
+- [x] Implement env and `.env` loading.
+- [x] Implement config validation for dry-run, mock, ankiweb, and Telegram send modes.
+- [x] Add `--source`, `--date`, `--dry-run`, and `--send` flags.
 
 Acceptance:
 
@@ -29,10 +29,10 @@ Acceptance:
 
 ## Phase 2: Mock Source and Message Renderer
 
-- [ ] Define metric data structures.
-- [ ] Add mock fixture data.
-- [ ] Implement message renderer for zero, low, met, and strong activity bands.
-- [ ] Add deterministic rendering behavior for tests.
+- [x] Define metric data structures.
+- [x] Add mock fixture data.
+- [x] Implement message renderer for zero, low, met, and strong activity bands.
+- [x] Add deterministic rendering behavior for tests.
 
 Acceptance:
 
