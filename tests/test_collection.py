@@ -115,6 +115,36 @@ def test_extract_daily_metrics_reads_newer_decks_table(tmp_path) -> None:
     assert metrics.easy_count == 1
 
 
+def test_extract_daily_metrics_includes_since_previous_run_comparison(tmp_path) -> None:
+    collection = tmp_path / "collection.anki2"
+    _create_collection(
+        collection,
+        [
+            _review(1, "2026-04-15T17:59:59+08:00", cid=100, ease=3, review_type=1),
+            _review(2, "2026-04-15T18:30:00+08:00", cid=101, ease=1, review_type=0),
+            _review(3, "2026-04-15T19:00:00+08:00", cid=101, ease=3, review_type=2),
+            _review(4, "2026-04-15T22:30:00+08:00", cid=102, ease=4, review_type=0),
+        ],
+    )
+
+    metrics = extract_daily_metrics(
+        collection_path=collection,
+        report_date=date(2026, 4, 15),
+        timezone_name="Asia/Taipei",
+        daily_goal_reviews=10,
+        previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
+        current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
+    )
+
+    assert metrics.review_count == 3
+    assert metrics.comparison is not None
+    assert metrics.comparison.review_count == 2
+    assert metrics.comparison.distinct_card_count == 1
+    assert metrics.comparison.new_count == 1
+    assert metrics.comparison.started_card_count == 1
+    assert metrics.comparison.again_count == 1
+
+
 def _create_collection(
     path,
     reviews: list[tuple[int, int, int, int]],

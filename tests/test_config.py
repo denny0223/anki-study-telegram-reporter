@@ -1,8 +1,9 @@
-from datetime import date
+from datetime import date, datetime
 
 import pytest
 
 from anki_study_telegram_reporter.config import ConfigError, build_config
+from anki_study_telegram_reporter.state import save_last_successful_run
 
 
 def test_mock_dry_run_does_not_require_secrets() -> None:
@@ -18,6 +19,7 @@ def test_mock_dry_run_does_not_require_secrets() -> None:
     assert config.source == "mock"
     assert config.dry_run is True
     assert config.report_date == date(2026, 4, 15)
+    assert config.previous_report_run_at is None
     assert config.vocabulary_target_count == 1600
     assert config.exam_date == date(2026, 5, 17)
     assert config.report_slot == "auto"
@@ -34,7 +36,10 @@ def test_ankiweb_requires_anki_credentials() -> None:
         build_config(source="ankiweb", dry_run=True, send=False, report_date=None, env={}, dotenv={})
 
 
-def test_env_values_are_used() -> None:
+def test_env_values_are_used(tmp_path) -> None:
+    state_path = tmp_path / "state.json"
+    save_last_successful_run(state_path, datetime.fromisoformat("2026-04-15T18:00:00+08:00"))
+
     config = build_config(
         source=None,
         dry_run=None,
@@ -49,6 +54,7 @@ def test_env_values_are_used() -> None:
             "REPORT_SLOT": "evening",
             "SUPERVISOR_USERNAMES": "alice, @bob",
             "TARGET_DECKS": "Japanese, English",
+            "REPORT_STATE_PATH": str(state_path),
         },
         dotenv={},
     )
@@ -59,6 +65,8 @@ def test_env_values_are_used() -> None:
     assert config.report_slot == "evening"
     assert config.supervisor_usernames == ("@alice", "@bob")
     assert config.target_decks == ("Japanese", "English")
+    assert config.report_state_path == state_path
+    assert config.previous_report_run_at == datetime.fromisoformat("2026-04-15T18:00:00+08:00")
 
 
 def test_optional_collection_output_dir_is_parsed() -> None:

@@ -3,7 +3,21 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
+
+
+@dataclass(frozen=True)
+class StudyComparison:
+    previous_run_at: datetime
+    current_run_at: datetime
+    review_count: int
+    distinct_card_count: int
+    new_count: int
+    started_card_count: int
+    again_count: int
+    hard_count: int
+    good_count: int
+    easy_count: int
 
 
 @dataclass(frozen=True)
@@ -22,6 +36,7 @@ class StudyMetrics:
     good_count: int
     easy_count: int
     daily_goal_reviews: int
+    comparison: StudyComparison | None = None
 
     @property
     def success_rate(self) -> float:

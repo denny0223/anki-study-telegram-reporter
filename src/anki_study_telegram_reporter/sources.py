@@ -9,7 +9,7 @@ from pathlib import Path
 from .ankiweb import fetch_collection_to_path
 from .collection import extract_daily_metrics
 from .config import AppConfig
-from .metrics import StudyMetrics
+from .metrics import StudyComparison, StudyMetrics
 
 
 class SourceError(RuntimeError):
@@ -25,6 +25,21 @@ def load_metrics(config: AppConfig) -> StudyMetrics:
 
 
 def mock_metrics(config: AppConfig) -> StudyMetrics:
+    comparison = None
+    if config.previous_report_run_at is not None:
+        comparison = StudyComparison(
+            previous_run_at=config.previous_report_run_at,
+            current_run_at=config.report_run_at,
+            review_count=36,
+            distinct_card_count=28,
+            new_count=6,
+            started_card_count=6,
+            again_count=2,
+            hard_count=4,
+            good_count=24,
+            easy_count=6,
+        )
+
     return StudyMetrics(
         report_date=config.report_date,
         review_count=132,
@@ -40,6 +55,7 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
         good_count=82,
         easy_count=25,
         daily_goal_reviews=config.daily_goal_reviews,
+        comparison=comparison,
     )
 
 
@@ -59,6 +75,8 @@ def ankiweb_metrics(config: AppConfig) -> StudyMetrics:
                 daily_goal_reviews=config.daily_goal_reviews,
                 target_decks=config.target_decks,
                 excluded_decks=config.excluded_decks,
+                previous_run_at=config.previous_report_run_at,
+                current_run_at=config.report_run_at,
             )
     except Exception as exc:
         if isinstance(exc, SourceError):

@@ -11,10 +11,11 @@
 [▓▓▓░░░░░░░] 26%｜已收錄 420 / 1600 字
 🎯 今天刷 132 題 ✅｜新收 18 字，差 21 跟上節奏
 🟢 答錯 9 題（7%），進度有推，明天不用帶 blocker 起床
-🫵 請幫盯 @someone：有在 ship，幫忙維持這個 deploy 頻率。
+🫵 比上次 +36 題、新字 +6、錯題 +2，這段有把進度推上來；請幫盯 @someone：有在 ship，幫忙維持這個 deploy 頻率。
 ```
 
 報告會依據當天表現自動切換語氣：沒讀書 🔴、不夠 🟡、達標 🟢，讓群組裡的人一眼看出該不該出手催。
+未指定 `--date` 的正式排程會讀取上一個成功送出的時間，比較之後新增的刷題、新字與錯題，並在文案中給出相對回饋。
 
 ## Fork 之後怎麼用
 
@@ -53,6 +54,7 @@
 | `VOCABULARY_TARGET_COUNT` | `1600` | 總單字目標數 |
 | `EXAM_DATE` | `2026-05-17` | 考試日期，用來算倒數天數 |
 | `REPORT_SLOT` | `auto` | 報告語氣：`auto` 依成績決定、`morning` 早場、`evening` 晚場 |
+| `REPORT_STATE_PATH` | `.report-state/last-success.json` | 上次成功送出時間的狀態檔路徑，用來產生增量回饋 |
 | `SUPERVISOR_USERNAMES` | （空） | 要 tag 的監督者 Telegram username，逗號分隔，例如 `alice,bob` |
 | `TARGET_DECKS` | （空） | 只統計這些牌組，逗號分隔；空白 = 全部 |
 | `EXCLUDED_DECKS` | （空） | 排除這些牌組 |

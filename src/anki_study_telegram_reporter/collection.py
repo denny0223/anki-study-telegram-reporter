@@ -9,7 +9,7 @@ from pathlib import Path
 import sqlite3
 from zoneinfo import ZoneInfo
 
-from .metrics import StudyMetrics
+from .metrics import StudyComparison, StudyMetrics
 
 
 class CollectionReadError(RuntimeError):
@@ -24,15 +24,19 @@ def extract_daily_metrics(
     daily_goal_reviews: int,
     target_decks: tuple[str, ...] = (),
     excluded_decks: tuple[str, ...] = (),
+    previous_run_at: datetime | None = None,
+    current_run_at: datetime | None = None,
 ) -> StudyMetrics:
     timezone_info = timezone_name if isinstance(timezone_name, ZoneInfo) else ZoneInfo(timezone_name)
     start_ms, end_ms = _day_bounds_ms(report_date, timezone_info)
+    if current_run_at is not None and current_run_at.astimezone(timezone_info).date() == report_date:
+        end_ms = min(end_ms, _datetime_to_ms(current_run_at))
 
     with closing(_connect_read_only(collection_path)) as connection:
         deck_names = _load_deck_names(connection)
         rows = connection.execute(
             """
-            select r.cid, r.ease, r.type, c.did
+            select r.id, r.cid, r.ease, r.type, c.did
             from revlog r
             left join cards c on c.id = r.cid
             where r.id >= ? and r.id < ?
@@ -40,11 +44,31 @@ def extract_daily_metrics(
             (start_ms, end_ms),
         ).fetchall()
         card_rows = connection.execute("select id, did from cards").fetchall()
-        started_rows = connection.execute("select distinct r.cid, c.did from revlog r left join cards c on c.id = r.cid").fetchall()
+        started_rows = connection.execute(
+            """
+            select r.cid, c.did, min(r.id)
+            from revlog r
+            left join cards c on c.id = r.cid
+            group by r.cid, c.did
+            """
+        ).fetchall()
+        comparison_rows = (
+            connection.execute(
+                """
+                select r.id, r.cid, r.ease, r.type, c.did
+                from revlog r
+                left join cards c on c.id = r.cid
+                where r.id >= ? and r.id < ?
+                """,
+                (_datetime_to_ms(previous_run_at), _datetime_to_ms(current_run_at)),
+            ).fetchall()
+            if previous_run_at is not None and current_run_at is not None
+            else []
+        )
 
     filtered_rows = [
-        (card_id, ease, review_type, deck_names.get(str(deck_id), ""))
-        for card_id, ease, review_type, deck_id in rows
+        (review_id, card_id, ease, review_type, deck_names.get(str(deck_id), ""))
+        for review_id, card_id, ease, review_type, deck_id in rows
         if _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
     ]
     filtered_cards = [
@@ -54,20 +78,29 @@ def extract_daily_metrics(
     ]
     filtered_started_cards = {
         card_id
-        for card_id, deck_id in started_rows
+        for card_id, deck_id, _ in started_rows
         if _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
     }
+    comparison = _build_comparison(
+        rows=comparison_rows,
+        started_rows=started_rows,
+        deck_names=deck_names,
+        target_decks=target_decks,
+        excluded_decks=excluded_decks,
+        previous_run_at=previous_run_at,
+        current_run_at=current_run_at,
+    )
 
     review_count = len(filtered_rows)
-    again_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 1)
-    hard_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 2)
-    good_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 3)
-    easy_count = sum(1 for _, ease, _, _ in filtered_rows if ease == 4)
+    again_count = sum(1 for _, _, ease, _, _ in filtered_rows if ease == 1)
+    hard_count = sum(1 for _, _, ease, _, _ in filtered_rows if ease == 2)
+    good_count = sum(1 for _, _, ease, _, _ in filtered_rows if ease == 3)
+    easy_count = sum(1 for _, _, ease, _, _ in filtered_rows if ease == 4)
 
     return StudyMetrics(
         report_date=report_date,
         review_count=review_count,
-        distinct_card_count=len({card_id for card_id, _, _, _ in filtered_rows}),
+        distinct_card_count=len({card_id for _, card_id, _, _, _ in filtered_rows}),
         new_count=_count_distinct_cards_by_type(filtered_rows, 0),
         learning_count=_count_distinct_cards_by_type(filtered_rows, 2),
         review_card_count=_count_distinct_cards_by_type(filtered_rows, 1),
@@ -79,6 +112,7 @@ def extract_daily_metrics(
         good_count=good_count,
         easy_count=easy_count,
         daily_goal_reviews=daily_goal_reviews,
+        comparison=comparison,
     )
 
 
@@ -133,5 +167,54 @@ def _deck_is_included(deck_name: str, target_decks: tuple[str, ...], excluded_de
     return True
 
 
-def _count_distinct_cards_by_type(rows: list[tuple[int, int, int, str]], review_type: int) -> int:
-    return len({card_id for card_id, _, row_review_type, _ in rows if row_review_type == review_type})
+def _datetime_to_ms(value: datetime) -> int:
+    if value.tzinfo is None:
+        raise CollectionReadError("Comparison run times must include timezone information.")
+    return int(value.astimezone(timezone.utc).timestamp() * 1000)
+
+
+def _build_comparison(
+    *,
+    rows: list[tuple[int, int, int, int, int]],
+    started_rows: list[tuple[int, int, int]],
+    deck_names: dict[str, str],
+    target_decks: tuple[str, ...],
+    excluded_decks: tuple[str, ...],
+    previous_run_at: datetime | None,
+    current_run_at: datetime | None,
+) -> StudyComparison | None:
+    if previous_run_at is None or current_run_at is None:
+        return None
+
+    filtered_rows = [
+        (review_id, card_id, ease, review_type, deck_names.get(str(deck_id), ""))
+        for review_id, card_id, ease, review_type, deck_id in rows
+        if _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
+    ]
+    previous_ms = _datetime_to_ms(previous_run_at)
+    current_ms = _datetime_to_ms(current_run_at)
+    started_card_count = len(
+        {
+            card_id
+            for card_id, deck_id, first_review_id in started_rows
+            if previous_ms <= first_review_id < current_ms
+            and _deck_is_included(deck_names.get(str(deck_id), ""), target_decks, excluded_decks)
+        }
+    )
+
+    return StudyComparison(
+        previous_run_at=previous_run_at,
+        current_run_at=current_run_at,
+        review_count=len(filtered_rows),
+        distinct_card_count=len({card_id for _, card_id, _, _, _ in filtered_rows}),
+        new_count=_count_distinct_cards_by_type(filtered_rows, 0),
+        started_card_count=started_card_count,
+        again_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 1),
+        hard_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 2),
+        good_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 3),
+        easy_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 4),
+    )
+
+
+def _count_distinct_cards_by_type(rows: list[tuple[int, int, int, int, str]], review_type: int) -> int:
+    return len({card_id for _, card_id, _, row_review_type, _ in rows if row_review_type == review_type})

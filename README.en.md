@@ -11,10 +11,11 @@ Automatically fetches your Anki study history from AnkiWeb and posts daily progr
 [▓▓▓░░░░░░░] 26%｜已收錄 420 / 1600 字
 🎯 今天刷 132 題 ✅｜新收 18 字，差 21 跟上節奏
 🟢 答錯 9 題（7%），進度有推，明天不用帶 blocker 起床
-🫵 請幫盯 @someone：有在 ship，幫忙維持這個 deploy 頻率。
+🫵 比上次 +36 題、新字 +6、錯題 +2，這段有把進度推上來；請幫盯 @someone：有在 ship，幫忙維持這個 deploy 頻率。
 ```
 
 Reports are generated in Traditional Chinese. The tone adapts automatically: 🔴 no activity, 🟡 below goal, 🟢 goal met or exceeded.
+Scheduled reports without `--date` read the previous successful send time, compare activity since then, and include delta feedback in the copy.
 
 ## Quick Start (Fork & Deploy)
 
@@ -53,6 +54,7 @@ Under **Settings → Secrets and variables → Actions → Variables**:
 | `VOCABULARY_TARGET_COUNT` | `1600` | Total vocabulary goal |
 | `EXAM_DATE` | `2026-05-17` | Exam date for countdown |
 | `REPORT_SLOT` | `auto` | Report tone: `auto`, `morning`, or `evening` |
+| `REPORT_STATE_PATH` | `.report-state/last-success.json` | State file path for the previous successful send time, used for delta feedback |
 | `SUPERVISOR_USERNAMES` | (empty) | Telegram usernames to tag, comma-separated |
 | `TARGET_DECKS` | (empty) | Only count these decks, comma-separated; empty = all |
 | `EXCLUDED_DECKS` | (empty) | Exclude these decks |

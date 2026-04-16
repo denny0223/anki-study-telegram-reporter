@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 import os
+
+from .state import ReportStateError, load_last_successful_run
 
 
 SUPPORTED_SOURCES = {"mock", "ankiweb"}
@@ -22,6 +24,8 @@ class AppConfig:
     source: str
     dry_run: bool
     report_date: date
+    report_run_at: datetime
+    previous_report_run_at: datetime | None
     timezone: ZoneInfo
     daily_goal_reviews: int
     vocabulary_target_count: int
@@ -33,6 +37,8 @@ class AppConfig:
     anki_username: str | None
     anki_password: str | None
     anki_collection_output_dir: Path | None
+    report_state_path: Path
+    update_report_state: bool
     telegram_bot_token: str | None
     telegram_chat_id: str | None
     telegram_thread_id: str | None
@@ -86,6 +92,7 @@ def build_config(
         timezone = ZoneInfo(timezone_name)
     except ZoneInfoNotFoundError as exc:
         raise ConfigError(f"Unknown timezone '{timezone_name}'.") from exc
+    report_run_at = datetime.now(timezone)
 
     daily_goal = _parse_positive_int(merged.get("DAILY_GOAL_REVIEWS", "100"), "DAILY_GOAL_REVIEWS")
     vocabulary_target = _parse_positive_int(
@@ -97,11 +104,15 @@ def build_config(
         raise ConfigError(
             f"Unsupported REPORT_SLOT '{report_slot}'. Expected one of: {', '.join(sorted(SUPPORTED_REPORT_SLOTS))}."
         )
+    report_state_path = _parse_path(merged.get("REPORT_STATE_PATH", ".report-state/last-success.json"))
+    previous_report_run_at = None if report_date is not None else _load_previous_report_run_at(report_state_path)
 
     config = AppConfig(
         source=selected_source,
         dry_run=selected_dry_run,
-        report_date=report_date or date.today(),
+        report_date=report_date or report_run_at.date(),
+        report_run_at=report_run_at,
+        previous_report_run_at=previous_report_run_at,
         timezone=timezone,
         daily_goal_reviews=daily_goal,
         vocabulary_target_count=vocabulary_target,
@@ -113,6 +124,8 @@ def build_config(
         anki_username=_blank_to_none(merged.get("ANKI_USERNAME")),
         anki_password=_blank_to_none(merged.get("ANKI_PASSWORD")),
         anki_collection_output_dir=_parse_optional_path(merged.get("ANKI_COLLECTION_OUTPUT_DIR")),
+        report_state_path=report_state_path,
+        update_report_state=report_date is None,
         telegram_bot_token=_blank_to_none(merged.get("TELEGRAM_BOT_TOKEN")),
         telegram_chat_id=_blank_to_none(merged.get("TELEGRAM_CHAT_ID")),
         telegram_thread_id=_blank_to_none(merged.get("TELEGRAM_THREAD_ID")),
@@ -207,4 +220,15 @@ def _parse_optional_path(value: str | None) -> Path | None:
     value = _blank_to_none(value)
     if value is None:
         return None
+    return _parse_path(value)
+
+
+def _parse_path(value: str) -> Path:
     return Path(value).expanduser()
+
+
+def _load_previous_report_run_at(path: Path) -> datetime | None:
+    try:
+        return load_last_successful_run(path)
+    except ReportStateError as exc:
+        raise ConfigError(str(exc)) from exc

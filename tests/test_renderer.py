@@ -1,6 +1,6 @@
-from datetime import date
+from datetime import date, datetime
 
-from anki_study_telegram_reporter.metrics import StudyMetrics
+from anki_study_telegram_reporter.metrics import StudyComparison, StudyMetrics
 from anki_study_telegram_reporter.renderer import render_report
 
 
@@ -90,6 +90,45 @@ def test_supervisor_usernames_are_tagged() -> None:
     report = render_report(_metrics(20), supervisor_usernames=("@alice", "@bob"))
 
     assert "請幫盯 @alice @bob" in report
+
+
+def test_comparison_feedback_is_rendered_when_available() -> None:
+    metrics = StudyMetrics(
+        report_date=date(2026, 4, 15),
+        review_count=70,
+        distinct_card_count=40,
+        new_count=8,
+        learning_count=2,
+        review_card_count=30,
+        relearn_count=0,
+        total_card_count=1600,
+        started_card_count=420,
+        again_count=3,
+        hard_count=10,
+        good_count=50,
+        easy_count=7,
+        daily_goal_reviews=100,
+        comparison=StudyComparison(
+            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
+            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
+            review_count=30,
+            distinct_card_count=24,
+            new_count=5,
+            started_card_count=5,
+            again_count=1,
+            hard_count=4,
+            good_count=20,
+            easy_count=5,
+        ),
+    )
+
+    report = render_report(metrics, supervisor_usernames=("@alice",))
+
+    assert "比上次 +30 題" in report
+    assert "新字 +5" in report
+    assert "錯題 +1" in report
+    assert "還差 30 題達標" in report
+    assert "請幫盯 @alice" in report
 
 
 def test_report_is_short_enough_for_group_chat() -> None:

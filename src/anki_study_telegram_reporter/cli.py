@@ -10,6 +10,7 @@ from .config import ConfigError, build_config
 from .logging import redact
 from .renderer import render_report
 from .sources import SourceError, load_metrics
+from .state import ReportStateError, save_last_successful_run
 from .telegram import TelegramClient, TelegramError
 
 
@@ -58,8 +59,13 @@ def _run_report(args: argparse.Namespace) -> int:
             chat_id=config.telegram_chat_id or "",
             thread_id=config.telegram_thread_id,
         ).send_message(message)
+        if config.update_report_state:
+            save_last_successful_run(config.report_state_path, config.report_run_at)
     except TelegramError as exc:
         print(f"error: {redact(str(exc), _known_secrets())}", file=sys.stderr)
+        return 2
+    except ReportStateError as exc:
+        print(f"error: {exc}", file=sys.stderr)
         return 2
 
     print("Telegram report sent.")

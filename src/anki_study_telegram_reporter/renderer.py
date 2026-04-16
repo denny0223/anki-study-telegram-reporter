@@ -31,7 +31,7 @@ def render_report(
     progress = f"[{bar}] {progress_pct}%｜已收錄 {started} / {vocabulary_target_count} 字"
     activity = f"🎯 {_activity_line(metrics, required_new_per_day)}"
     status = _status_line(metrics, band, slot, seed)
-    supervisor = _supervisor_line(supervisor_usernames, band, seed)
+    supervisor = _supervisor_line(metrics, supervisor_usernames, band, seed)
 
     return "\n".join([header, progress, activity, status, supervisor])
 
@@ -81,13 +81,41 @@ def _status_line(metrics: StudyMetrics, band: str, slot: str, seed: int) -> str:
     return f"{emoji} 答錯 {metrics.again_count} 題（{pct}%），{comment}"
 
 
-def _supervisor_line(supervisor_usernames: tuple[str, ...], band: str, seed: int) -> str:
+def _supervisor_line(metrics: StudyMetrics, supervisor_usernames: tuple[str, ...], band: str, seed: int) -> str:
     nudge_key = "behind" if band in {"zero", "low"} else "on_track"
     nudge = _pick_line(NUDGES[nudge_key], seed)
+    comparison = _comparison_feedback(metrics)
     if not supervisor_usernames:
+        if comparison:
+            return f"🫵 {comparison}；{nudge}。"
         return f"🫵 群組監工請就位：{nudge}。"
     tag_text = " ".join(supervisor_usernames)
+    if comparison:
+        return f"🫵 {comparison}；請幫盯 {tag_text}：{nudge}。"
     return f"🫵 請幫盯 {tag_text}：{nudge}。"
+
+
+def _comparison_feedback(metrics: StudyMetrics) -> str:
+    comparison = metrics.comparison
+    if comparison is None:
+        return ""
+    if comparison.review_count == 0:
+        return "比上次沒有新增紀錄，現在是空窗"
+
+    parts = [f"比上次 +{comparison.review_count} 題"]
+    if comparison.new_count:
+        parts.append(f"新字 +{comparison.new_count}")
+    if comparison.started_card_count and comparison.started_card_count != comparison.new_count:
+        parts.append(f"收錄 +{comparison.started_card_count}")
+    if comparison.again_count:
+        parts.append(f"錯題 +{comparison.again_count}")
+
+    if metrics.goal_met:
+        feedback = "這段有把進度推上來"
+    else:
+        gap = metrics.daily_goal_reviews - metrics.review_count
+        feedback = f"還差 {gap} 題達標"
+    return "、".join(parts) + f"，{feedback}"
 
 
 def _required_per_day(remaining_words: int, days_left: int) -> int:

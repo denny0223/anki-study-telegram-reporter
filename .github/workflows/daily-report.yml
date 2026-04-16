@@ -104,6 +104,14 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked
 
+      - name: Restore report state
+        uses: actions/cache/restore@v4
+        with:
+          path: .report-state
+          key: report-state-${{ github.run_id }}
+          restore-keys: |
+            report-state-
+
       - name: Send report
         env:
           ANKI_USERNAME: ${{ secrets.ANKI_USERNAME }}
@@ -116,6 +124,7 @@ jobs:
           VOCABULARY_TARGET_COUNT: ${{ vars.VOCABULARY_TARGET_COUNT || '1600' }}
           EXAM_DATE: ${{ vars.EXAM_DATE || '2026-05-17' }}
           REPORT_SLOT: ${{ vars.REPORT_SLOT || 'auto' }}
+          REPORT_STATE_PATH: .report-state/last-success.json
           SUPERVISOR_USERNAMES: ${{ vars.SUPERVISOR_USERNAMES }}
           TARGET_DECKS: ${{ vars.TARGET_DECKS }}
           EXCLUDED_DECKS: ${{ vars.EXCLUDED_DECKS }}
@@ -127,3 +136,10 @@ jobs:
             args+=(--date "$INPUT_DATE")
           fi
           uv run anki-study-telegram-reporter "${args[@]}"
+
+      - name: Save report state
+        if: success() && hashFiles('.report-state/last-success.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .report-state
+          key: report-state-${{ github.run_id }}

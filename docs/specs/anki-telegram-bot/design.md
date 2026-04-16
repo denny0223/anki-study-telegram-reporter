@@ -182,10 +182,12 @@ MVP behavior:
 - Manual workflow runs may send again.
 - Scheduled runs should execute once per configured schedule.
 
-Post-MVP option:
+Incremental Comparison State:
 
-- Store a send marker in GitHub Actions cache keyed by report date.
-- Add `FORCE_SEND=true` to override.
+- Store the last successful send timestamp in `.report-state/last-success.json`.
+- Restore and save `.report-state` through GitHub Actions cache using a unique run key plus a broad restore prefix.
+- Use this timestamp, not the cron schedule, to compare activity since the previous successful report.
+- Do not update the state file for dry-runs or explicit historical `--date` reports.
 
 ## Risk Register
 
