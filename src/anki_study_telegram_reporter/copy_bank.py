@@ -8,6 +8,10 @@ for the zero band). They should read naturally in that position.
 
 NUDGES are supervisor tag-line suffixes, split into "behind" (zero/low) and
 "on_track" (met/strong) to match the tone to the student's performance.
+
+COMPARISON_LINES are appended after the "比上次 +N 題" delta summary.
+They should work well in a SITCON-adjacent group: technical enough to feel
+native, but still readable without knowing a private inside joke.
 """
 
 STATUS_LINES: dict[str, dict[str, list[str]]] = {
@@ -105,5 +109,44 @@ NUDGES: dict[str, list[str]] = {
         "今天戰績不錯，鼓勵他明天繼續上線",
         "進度在軌道上，但到 deadline 前都不能鬆懈",
         "表現不錯，持續監控到 release day",
+    ],
+}
+
+COMPARISON_LINES: dict[str, list[str]] = {
+    "idle": [
+        "這段 timeline 沒新 commit，議程表暫時空白",
+        "上次到現在 0 題，bot 已經在門口發提醒傳單",
+        "活動場地很安靜，現在需要第一位講者上台",
+        "沒有新增紀錄，這段像沒有人認領的 issue",
+    ],
+    "catchup": [
+        "有 push 了，但 CI 還差一點才會綠",
+        "進度開始有聲音，還需要再補幾個 commit",
+        "像 CFP 前夜有在趕稿，但還沒到可以送出的版本",
+        "BoF 已經開場，現在需要把討論串接著推下去",
+    ],
+    "on_track": [
+        "這段增量已 merge，今天 quota 綠燈",
+        "節奏有接上，像議程準時跑完沒有 delay",
+        "這波輸出可以寫進 release note，明天繼續維護",
+        "有把 backlog 往下清，maintainer 可以先喘一口氣",
+    ],
+    "surge": [
+        "這段像 lightning talk 連發，進度直接有聲量",
+        "輸出量接近 unconference 爆場，單字牆被推進一截",
+        "commit graph 突然長出一片綠，群組可以開香檳水",
+        "這波 throughput 很 SITCON，志工台都想幫你貼貼紙",
+    ],
+    "noisy": [
+        "錯題偏吵，建議先開 issue 逐一追蹤",
+        "fail case 有點多，這段需要加測試也需要再複習",
+        "錯題像會場 Wi-Fi 尖峰，先穩住再衝下一輪",
+        "紅燈不少，但至少 log 很完整，下一輪可以精準修",
+    ],
+    "clean": [
+        "這段零失誤，像 demo 一次就過",
+        "沒有 Again，CI 乾淨到 reviewer 會點頭",
+        "這波品質很穩，像排練過的 lightning talk",
+        "錯題噪音歸零，這段可以安心標成 stable",
     ],
 }

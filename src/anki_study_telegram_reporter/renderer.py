@@ -5,7 +5,7 @@ from __future__ import annotations
 from datetime import date
 from math import ceil
 
-from .copy_bank import NUDGES, STATUS_LINES
+from .copy_bank import COMPARISON_LINES, NUDGES, STATUS_LINES
 from .metrics import StudyMetrics
 
 
@@ -100,7 +100,7 @@ def _comparison_feedback(metrics: StudyMetrics) -> str:
     if comparison is None:
         return ""
     if comparison.review_count == 0:
-        return "比上次沒有新增紀錄，現在是空窗"
+        return _pick_line(COMPARISON_LINES["idle"], _seed(metrics, "comparison"))
 
     parts = [f"比上次 +{comparison.review_count} 題"]
     if comparison.new_count:
@@ -110,12 +110,31 @@ def _comparison_feedback(metrics: StudyMetrics) -> str:
     if comparison.again_count:
         parts.append(f"錯題 +{comparison.again_count}")
 
-    if metrics.goal_met:
-        feedback = "這段有把進度推上來"
-    else:
+    feedback = _comparison_comment(metrics)
+    if not metrics.goal_met:
         gap = metrics.daily_goal_reviews - metrics.review_count
-        feedback = f"還差 {gap} 題達標"
-    return "、".join(parts) + f"，{feedback}"
+        feedback = f"{feedback}，還差 {gap} 題達標"
+    return "、".join(parts) + f"｜{feedback}"
+
+
+def _comparison_comment(metrics: StudyMetrics) -> str:
+    comparison = metrics.comparison
+    if comparison is None:
+        return ""
+
+    seed = _seed(metrics, "comparison") + comparison.review_count + comparison.new_count * 7
+    if comparison.again_count == 0:
+        return _pick_line(COMPARISON_LINES["clean"], seed)
+
+    comparison_again_rate = comparison.again_count / comparison.review_count
+    if comparison_again_rate >= 0.35:
+        return _pick_line(COMPARISON_LINES["noisy"], seed)
+
+    if comparison.review_count >= metrics.daily_goal_reviews:
+        return _pick_line(COMPARISON_LINES["surge"], seed)
+    if metrics.goal_met:
+        return _pick_line(COMPARISON_LINES["on_track"], seed)
+    return _pick_line(COMPARISON_LINES["catchup"], seed)
 
 
 def _required_per_day(remaining_words: int, days_left: int) -> int:

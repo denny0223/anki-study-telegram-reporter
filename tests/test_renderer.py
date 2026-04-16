@@ -131,8 +131,102 @@ def test_comparison_feedback_is_rendered_when_available() -> None:
     assert "請幫盯 @alice" in report
 
 
+def test_comparison_feedback_handles_idle_delta() -> None:
+    metrics = _metrics(20)
+    metrics = StudyMetrics(
+        **{**metrics.__dict__, "comparison": StudyComparison(
+            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
+            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
+            review_count=0,
+            distinct_card_count=0,
+            new_count=0,
+            started_card_count=0,
+            again_count=0,
+            hard_count=0,
+            good_count=0,
+            easy_count=0,
+        )}
+    )
+
+    report = render_report(metrics)
+
+    assert "比上次 +0" not in report
+    assert any(text in report for text in ("timeline", "0 題", "講者", "issue"))
+
+
+def test_comparison_feedback_calls_out_noisy_delta() -> None:
+    metrics = _metrics(140)
+    metrics = StudyMetrics(
+        **{**metrics.__dict__, "comparison": StudyComparison(
+            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
+            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
+            review_count=20,
+            distinct_card_count=18,
+            new_count=2,
+            started_card_count=2,
+            again_count=9,
+            hard_count=3,
+            good_count=8,
+            easy_count=0,
+        )}
+    )
+
+    report = render_report(metrics)
+
+    assert "比上次 +20 題" in report
+    assert "錯題 +9" in report
+    assert any(text in report for text in ("錯題偏吵", "fail case", "Wi-Fi", "紅燈"))
+
+
+def test_comparison_feedback_calls_out_clean_delta() -> None:
+    metrics = _metrics(140)
+    metrics = StudyMetrics(
+        **{**metrics.__dict__, "comparison": StudyComparison(
+            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
+            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
+            review_count=20,
+            distinct_card_count=18,
+            new_count=2,
+            started_card_count=2,
+            again_count=0,
+            hard_count=3,
+            good_count=15,
+            easy_count=2,
+        )}
+    )
+
+    report = render_report(metrics)
+
+    assert "比上次 +20 題" in report
+    assert "錯題 +" not in report
+    assert any(text in report for text in ("零失誤", "CI", "lightning talk", "stable"))
+
+
 def test_report_is_short_enough_for_group_chat() -> None:
     report = render_report(_metrics(220), supervisor_usernames=("@alice",))
+
+    assert len(report.splitlines()) == 5
+    assert len(report) < 300
+
+
+def test_report_with_comparison_is_short_enough_for_group_chat() -> None:
+    metrics = _metrics(220)
+    metrics = StudyMetrics(
+        **{**metrics.__dict__, "comparison": StudyComparison(
+            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
+            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
+            review_count=80,
+            distinct_card_count=60,
+            new_count=12,
+            started_card_count=12,
+            again_count=4,
+            hard_count=8,
+            good_count=58,
+            easy_count=10,
+        )}
+    )
+
+    report = render_report(metrics, supervisor_usernames=("@alice",))
 
     assert len(report.splitlines()) == 5
     assert len(report) < 300
