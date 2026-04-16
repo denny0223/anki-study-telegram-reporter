@@ -54,7 +54,7 @@ jobs:
         run: uv sync --locked --extra dev
 
       - name: Run tests
-        run: uv run pytest
+        run: uv run python -m pytest
 
   mock-dry-run:
     name: Mock dry-run

@@ -203,16 +203,10 @@ def _build_comparison(
     )
 
     return StudyComparison(
-        previous_run_at=previous_run_at,
-        current_run_at=current_run_at,
         review_count=len(filtered_rows),
-        distinct_card_count=len({card_id for _, card_id, _, _, _ in filtered_rows}),
         new_count=_count_distinct_cards_by_type(filtered_rows, 0),
         started_card_count=started_card_count,
         again_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 1),
-        hard_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 2),
-        good_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 3),
-        easy_count=sum(1 for _, _, ease, _, _ in filtered_rows if ease == 4),
     )
 
 

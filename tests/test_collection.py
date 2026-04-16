@@ -139,7 +139,6 @@ def test_extract_daily_metrics_includes_since_previous_run_comparison(tmp_path) 
     assert metrics.review_count == 3
     assert metrics.comparison is not None
     assert metrics.comparison.review_count == 2
-    assert metrics.comparison.distinct_card_count == 1
     assert metrics.comparison.new_count == 1
     assert metrics.comparison.started_card_count == 1
     assert metrics.comparison.again_count == 1

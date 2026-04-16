@@ -28,16 +28,10 @@ def mock_metrics(config: AppConfig) -> StudyMetrics:
     comparison = None
     if config.previous_report_run_at is not None:
         comparison = StudyComparison(
-            previous_run_at=config.previous_report_run_at,
-            current_run_at=config.report_run_at,
             review_count=36,
-            distinct_card_count=28,
             new_count=6,
             started_card_count=6,
             again_count=2,
-            hard_count=4,
-            good_count=24,
-            easy_count=6,
         )
 
     return StudyMetrics(

@@ -101,7 +101,6 @@ Minimum metrics:
 - `hard_count`
 - `good_count`
 - `easy_count`
-- `success_rate`
 - `goal_met`
 
 Acceptance criteria:

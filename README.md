@@ -89,7 +89,7 @@ schedule:
 uv sync --extra dev
 
 # 跑測試
-uv run pytest
+uv run python -m pytest
 
 # 用假資料產生報告（不需要任何帳號）
 uv run anki-study-telegram-reporter report --source mock --date 2026-04-16 --dry-run
@@ -104,6 +104,8 @@ uv run anki-study-telegram-reporter report --source ankiweb --dry-run
 ```
 
 加上 `--send` 會真的發到 Telegram（需要同時設定 `TELEGRAM_BOT_TOKEN` 和 `TELEGRAM_CHAT_ID`）。
+
+`--dry-run` 會讀取 `REPORT_STATE_PATH` 產生「比上次」文案，但不會更新狀態檔；只有未指定 `--date` 且 `--send` 成功後，才會寫入新的上次成功送出時間。
 
 ### 保留下載的 collection
 

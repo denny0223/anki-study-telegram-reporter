@@ -88,7 +88,7 @@ Requires [uv](https://docs.astral.sh/uv/).
 uv sync --extra dev
 
 # Run tests
-uv run pytest
+uv run python -m pytest
 
 # Generate a mock report (no credentials needed)
 uv run anki-study-telegram-reporter report --source mock --date 2026-04-16 --dry-run
@@ -103,6 +103,8 @@ uv run anki-study-telegram-reporter report --source ankiweb --dry-run
 ```
 
 Add `--send` to deliver to Telegram (requires `TELEGRAM_BOT_TOKEN` and `TELEGRAM_CHAT_ID` in `.env`).
+
+`--dry-run` reads `REPORT_STATE_PATH` for delta copy but does not update the state file. The state is updated only after a successful `--send` without an explicit `--date`.
 
 ### Keep Downloaded Collection
 

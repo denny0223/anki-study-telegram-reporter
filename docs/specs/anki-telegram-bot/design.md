@@ -153,19 +153,20 @@ Non-responsibilities:
 5. Message renderer creates final text.
 6. If `dry_run` is true, CLI prints the text.
 7. If `dry_run` is false, Telegram client sends the text.
+8. If the send succeeds and no explicit `--date` was requested, the CLI stores the successful run timestamp for the next comparison.
 
 ## GitHub Actions Design
 
 Workflow triggers:
 
-- `schedule`: daily run.
+- `schedule`: twice-daily run by default.
 - `workflow_dispatch`: manual run.
 
 Jobs:
 
-- `validate`: run lint and tests.
-- `dry-run`: generate a mock report.
-- `send-report`: run real AnkiWeb source and Telegram send.
+- `test`: run tests.
+- `mock-dry-run`: generate a mock report.
+- `send-report`: run the selected source and send to Telegram.
 
 The production job uses:
 

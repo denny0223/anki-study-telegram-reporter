@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date
 
 from anki_study_telegram_reporter.metrics import StudyComparison, StudyMetrics
 from anki_study_telegram_reporter.renderer import render_report
@@ -109,16 +109,10 @@ def test_comparison_feedback_is_rendered_when_available() -> None:
         easy_count=7,
         daily_goal_reviews=100,
         comparison=StudyComparison(
-            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
-            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
             review_count=30,
-            distinct_card_count=24,
             new_count=5,
             started_card_count=5,
             again_count=1,
-            hard_count=4,
-            good_count=20,
-            easy_count=5,
         ),
     )
 
@@ -135,16 +129,10 @@ def test_comparison_feedback_handles_idle_delta() -> None:
     metrics = _metrics(20)
     metrics = StudyMetrics(
         **{**metrics.__dict__, "comparison": StudyComparison(
-            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
-            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
             review_count=0,
-            distinct_card_count=0,
             new_count=0,
             started_card_count=0,
             again_count=0,
-            hard_count=0,
-            good_count=0,
-            easy_count=0,
         )}
     )
 
@@ -158,16 +146,10 @@ def test_comparison_feedback_calls_out_noisy_delta() -> None:
     metrics = _metrics(140)
     metrics = StudyMetrics(
         **{**metrics.__dict__, "comparison": StudyComparison(
-            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
-            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
             review_count=20,
-            distinct_card_count=18,
             new_count=2,
             started_card_count=2,
             again_count=9,
-            hard_count=3,
-            good_count=8,
-            easy_count=0,
         )}
     )
 
@@ -182,16 +164,10 @@ def test_comparison_feedback_calls_out_clean_delta() -> None:
     metrics = _metrics(140)
     metrics = StudyMetrics(
         **{**metrics.__dict__, "comparison": StudyComparison(
-            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
-            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
             review_count=20,
-            distinct_card_count=18,
             new_count=2,
             started_card_count=2,
             again_count=0,
-            hard_count=3,
-            good_count=15,
-            easy_count=2,
         )}
     )
 
@@ -213,16 +189,10 @@ def test_report_with_comparison_is_short_enough_for_group_chat() -> None:
     metrics = _metrics(220)
     metrics = StudyMetrics(
         **{**metrics.__dict__, "comparison": StudyComparison(
-            previous_run_at=datetime.fromisoformat("2026-04-15T18:00:00+08:00"),
-            current_run_at=datetime.fromisoformat("2026-04-15T22:00:00+08:00"),
             review_count=80,
-            distinct_card_count=60,
             new_count=12,
             started_card_count=12,
             again_count=4,
-            hard_count=8,
-            good_count=58,
-            easy_count=10,
         )}
     )
 
