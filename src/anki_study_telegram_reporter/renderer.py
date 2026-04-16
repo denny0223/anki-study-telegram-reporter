@@ -100,7 +100,8 @@ def _comparison_feedback(metrics: StudyMetrics) -> str:
     if comparison is None:
         return ""
     if comparison.review_count == 0:
-        return _pick_line(COMPARISON_LINES["idle"], _seed(metrics, "comparison"))
+        comment = _pick_line(COMPARISON_LINES["idle"], _seed(metrics, "comparison"))
+        return f"比上次沒有新增紀錄｜{comment}"
 
     parts = [f"比上次 +{comparison.review_count} 題"]
     if comparison.new_count:

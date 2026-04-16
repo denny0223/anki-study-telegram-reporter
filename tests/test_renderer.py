@@ -139,6 +139,7 @@ def test_comparison_feedback_handles_idle_delta() -> None:
     report = render_report(metrics)
 
     assert "比上次 +0" not in report
+    assert "比上次沒有新增紀錄" in report
     assert any(text in report for text in ("timeline", "0 題", "講者", "issue"))
 
 
