@@ -67,7 +67,7 @@ def test_render_zero_again() -> None:
         daily_goal_reviews=100,
     )
     report = render_report(m, report_slot="evening")
-    assert "零失誤" in report
+    assert "這輪都順手" in report
 
 
 def test_render_has_progress_bar() -> None:
@@ -86,10 +86,11 @@ def test_report_slot_changes_copy_for_same_metrics() -> None:
     assert morning != evening
 
 
-def test_supervisor_usernames_are_tagged() -> None:
+def test_tagged_usernames_are_encouraged_by_group() -> None:
     report = render_report(_metrics(20), supervisor_usernames=("@alice", "@bob"))
 
-    assert "請幫盯 @alice @bob" in report
+    assert "📣 大家可以" in report
+    assert "@alice @bob" in report
 
 
 def test_comparison_feedback_is_rendered_when_available() -> None:
@@ -118,11 +119,12 @@ def test_comparison_feedback_is_rendered_when_available() -> None:
 
     report = render_report(metrics, supervisor_usernames=("@alice",))
 
-    assert "比上次 +30 題" in report
+    assert "上次後：刷 +30 題" in report
     assert "新字 +5" in report
-    assert "錯題 +1" in report
+    assert "不熟 +1" in report
     assert "還差 30 題達標" in report
-    assert "請幫盯 @alice" in report
+    assert "大家可以" in report
+    assert "@alice" in report
 
 
 def test_comparison_feedback_handles_idle_delta() -> None:
@@ -138,9 +140,9 @@ def test_comparison_feedback_handles_idle_delta() -> None:
 
     report = render_report(metrics)
 
-    assert "比上次 +0" not in report
-    assert "比上次沒有新增紀錄" in report
-    assert any(text in report for text in ("timeline", "0 題", "講者", "issue"))
+    assert "上次後：刷 +0" not in report
+    assert "上次後沒有新增紀錄" in report
+    assert any(text in report for text in ("一小輪", "進度條", "空 repo", "log"))
 
 
 def test_comparison_feedback_calls_out_noisy_delta() -> None:
@@ -156,9 +158,9 @@ def test_comparison_feedback_calls_out_noisy_delta() -> None:
 
     report = render_report(metrics)
 
-    assert "比上次 +20 題" in report
-    assert "錯題 +9" in report
-    assert any(text in report for text in ("錯題偏吵", "fail case", "Wi-Fi", "紅燈"))
+    assert "上次後：刷 +20 題" in report
+    assert "不熟 +9" in report
+    assert any(text in report for text in ("不熟的訊號", "好線索", "除錯", "下一輪會更準"))
 
 
 def test_comparison_feedback_calls_out_clean_delta() -> None:
@@ -174,9 +176,9 @@ def test_comparison_feedback_calls_out_clean_delta() -> None:
 
     report = render_report(metrics)
 
-    assert "比上次 +20 題" in report
-    assert "錯題 +" not in report
-    assert any(text in report for text in ("零失誤", "CI", "lightning talk", "stable"))
+    assert "上次後：刷 +20 題" in report
+    assert "不熟 +" not in report
+    assert any(text in report for text in ("都很順", "不熟標記", "demo", "安心往下"))
 
 
 def test_report_is_short_enough_for_group_chat() -> None:

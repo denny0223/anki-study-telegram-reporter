@@ -63,7 +63,7 @@ def _new_word_part(new_count: int, required_new_per_day: int) -> str:
     if required_new_per_day == 0:
         return "新字已全數收錄 ✅"
     if new_count == 0:
-        return f"新字還沒開，每天要收 {required_new_per_day} 字"
+        return f"新字還沒開始，每天目標 {required_new_per_day} 字"
     if new_count >= required_new_per_day:
         return f"新收 {new_count} 字 ✅"
     gap = required_new_per_day - new_count
@@ -76,23 +76,19 @@ def _status_line(metrics: StudyMetrics, band: str, slot: str, seed: int) -> str:
         return f"🔴 {comment}"
     emoji = {"low": "🟡", "met": "🟢", "strong": "🟢"}[band]
     if metrics.again_count == 0:
-        return f"{emoji} 零失誤，{comment}"
+        return f"{emoji} 這輪都順手，{comment}"
     pct = round(metrics.again_count / metrics.review_count * 100)
-    return f"{emoji} 答錯 {metrics.again_count} 題（{pct}%），{comment}"
+    return f"{emoji} {metrics.again_count} 題還不熟（{pct}%），{comment}"
 
 
 def _supervisor_line(metrics: StudyMetrics, supervisor_usernames: tuple[str, ...], band: str, seed: int) -> str:
     nudge_key = "behind" if band in {"zero", "low"} else "on_track"
-    nudge = _pick_line(NUDGES[nudge_key], seed)
+    target = "他" if not supervisor_usernames else f" {' '.join(supervisor_usernames)} "
+    nudge = _pick_line(NUDGES[nudge_key], seed).format(target=target)
     comparison = _comparison_feedback(metrics)
-    if not supervisor_usernames:
-        if comparison:
-            return f"🫵 {comparison}；{nudge}。"
-        return f"🫵 群組監工請就位：{nudge}。"
-    tag_text = " ".join(supervisor_usernames)
     if comparison:
-        return f"🫵 {comparison}；請幫盯 {tag_text}：{nudge}。"
-    return f"🫵 請幫盯 {tag_text}：{nudge}。"
+        return f"📣 {comparison}；大家可以{nudge}。"
+    return f"📣 大家可以{nudge}。"
 
 
 def _comparison_feedback(metrics: StudyMetrics) -> str:
@@ -101,21 +97,21 @@ def _comparison_feedback(metrics: StudyMetrics) -> str:
         return ""
     if comparison.review_count == 0:
         comment = _pick_line(COMPARISON_LINES["idle"], _seed(metrics, "comparison"))
-        return f"比上次沒有新增紀錄｜{comment}"
+        return f"上次後沒有新增紀錄｜{comment}"
 
-    parts = [f"比上次 +{comparison.review_count} 題"]
+    parts = [f"刷 +{comparison.review_count} 題"]
     if comparison.new_count:
         parts.append(f"新字 +{comparison.new_count}")
     if comparison.started_card_count and comparison.started_card_count != comparison.new_count:
         parts.append(f"收錄 +{comparison.started_card_count}")
     if comparison.again_count:
-        parts.append(f"錯題 +{comparison.again_count}")
+        parts.append(f"不熟 +{comparison.again_count}")
 
     feedback = _comparison_comment(metrics)
     if not metrics.goal_met:
         gap = metrics.daily_goal_reviews - metrics.review_count
         feedback = f"{feedback}，還差 {gap} 題達標"
-    return "、".join(parts) + f"｜{feedback}"
+    return "上次後：" + "、".join(parts) + f"｜{feedback}"
 
 
 def _comparison_comment(metrics: StudyMetrics) -> str:

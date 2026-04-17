@@ -1,6 +1,6 @@
 # Anki Study Telegram Reporter
 
-Automatically fetches your Anki study history from AnkiWeb and posts daily progress reports to a Telegram group, enabling community-driven accountability for exam preparation.
+Automatically fetches your Anki study history from AnkiWeb and posts daily progress reports to a Telegram group, enabling community-driven encouragement for exam preparation.
 
 > [中文版](README.md)
 
@@ -10,12 +10,12 @@ Automatically fetches your Anki study history from AnkiWeb and posts daily progr
 📊 會考單字日報｜倒數 31 天
 [▓▓▓░░░░░░░] 26%｜已收錄 420 / 1600 字
 🎯 今天刷 132 題 ✅｜新收 18 字，差 21 跟上節奏
-🟢 答錯 9 題（7%），進度有推，明天不用帶 blocker 起床
-🫵 比上次 +36 題、新字 +6、錯題 +2｜有把 backlog 往下清，maintainer 可以先喘一口氣；請幫盯 @someone：有在 ship，幫忙維持這個 deploy 頻率。
+🟢 9 題還不熟（7%），今日目標完成，可以收工
+📣 上次後：刷 +36 題、新字 +6、不熟 +2｜節奏有接上，今天進度穩；大家可以幫 @someone 按個讚，明天繼續。
 ```
 
-Reports are generated in Traditional Chinese. The tone adapts automatically: 🔴 no activity, 🟡 below goal, 🟢 goal met or exceeded.
-Scheduled reports without `--date` read the previous successful send time, compare activity since then, and include delta feedback in the copy.
+Reports are generated in Traditional Chinese. The tone adapts automatically: 🔴 not started yet, 🟡 warming up, 🟢 goal met or exceeded.
+Scheduled reports without `--date` read the previous successful send time, compare activity since then, and include encouraging delta feedback in the copy.
 
 ## Quick Start (Fork & Deploy)
 
@@ -55,7 +55,7 @@ Under **Settings → Secrets and variables → Actions → Variables**:
 | `EXAM_DATE` | `2026-05-17` | Exam date for countdown |
 | `REPORT_SLOT` | `auto` | Report tone: `auto`, `morning`, or `evening` |
 | `REPORT_STATE_PATH` | `.report-state/last-success.json` | State file path for the previous successful send time, used for delta feedback |
-| `SUPERVISOR_USERNAMES` | (empty) | Telegram usernames to tag, comma-separated |
+| `SUPERVISOR_USERNAMES` | (empty) | Telegram usernames to encourage or remind, comma-separated |
 | `TARGET_DECKS` | (empty) | Only count these decks, comma-separated; empty = all |
 | `EXCLUDED_DECKS` | (empty) | Exclude these decks |
 

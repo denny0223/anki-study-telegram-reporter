@@ -1,6 +1,6 @@
 # Anki Study Telegram Reporter
 
-每天自動從 AnkiWeb 抓取學習紀錄，產生進度報告並發送到 Telegram 群組，讓社群幫忙監督學習進度。
+每天自動從 AnkiWeb 抓取學習紀錄，產生進度報告並發送到 Telegram 群組，讓社群用輕鬆的方式陪跑學習進度。
 
 > [English version](README.en.md)
 
@@ -10,12 +10,12 @@
 📊 會考單字日報｜倒數 31 天
 [▓▓▓░░░░░░░] 26%｜已收錄 420 / 1600 字
 🎯 今天刷 132 題 ✅｜新收 18 字，差 21 跟上節奏
-🟢 答錯 9 題（7%），進度有推，明天不用帶 blocker 起床
-🫵 比上次 +36 題、新字 +6、錯題 +2｜有把 backlog 往下清，maintainer 可以先喘一口氣；請幫盯 @someone：有在 ship，幫忙維持這個 deploy 頻率。
+🟢 9 題還不熟（7%），今日目標完成，可以收工
+📣 上次後：刷 +36 題、新字 +6、不熟 +2｜節奏有接上，今天進度穩；大家可以幫 @someone 按個讚，明天繼續。
 ```
 
-報告會依據當天表現自動切換語氣：沒讀書 🔴、不夠 🟡、達標 🟢，讓群組裡的人一眼看出該不該出手催。
-未指定 `--date` 的正式排程會讀取上一個成功送出的時間，比較之後新增的刷題、新字與錯題，並在文案中給出相對回饋。
+報告會依據當天表現自動切換語氣：還沒開始 🔴、暖機中 🟡、達標 🟢，讓群組裡的人一眼看出該提醒還是鼓勵。
+未指定 `--date` 的正式排程會讀取上一個成功送出的時間，比較之後新增的刷題、新字與標為不熟的題數，並在文案中給出相對回饋。
 
 ## Fork 之後怎麼用
 
@@ -55,7 +55,7 @@
 | `EXAM_DATE` | `2026-05-17` | 考試日期，用來算倒數天數 |
 | `REPORT_SLOT` | `auto` | 報告語氣：`auto` 依成績決定、`morning` 早場、`evening` 晚場 |
 | `REPORT_STATE_PATH` | `.report-state/last-success.json` | 上次成功送出時間的狀態檔路徑，用來產生增量回饋 |
-| `SUPERVISOR_USERNAMES` | （空） | 要 tag 的監督者 Telegram username，逗號分隔，例如 `alice,bob` |
+| `SUPERVISOR_USERNAMES` | （空） | 要被提醒或鼓勵的 Telegram username，逗號分隔，例如 `alice,bob` |
 | `TARGET_DECKS` | （空） | 只統計這些牌組，逗號分隔；空白 = 全部 |
 | `EXCLUDED_DECKS` | （空） | 排除這些牌組 |
 
@@ -105,7 +105,7 @@ uv run anki-study-telegram-reporter report --source ankiweb --dry-run
 
 加上 `--send` 會真的發到 Telegram（需要同時設定 `TELEGRAM_BOT_TOKEN` 和 `TELEGRAM_CHAT_ID`）。
 
-`--dry-run` 會讀取 `REPORT_STATE_PATH` 產生「比上次」文案，但不會更新狀態檔；只有未指定 `--date` 且 `--send` 成功後，才會寫入新的上次成功送出時間。
+`--dry-run` 會讀取 `REPORT_STATE_PATH` 產生「上次後」文案，但不會更新狀態檔；只有未指定 `--date` 且 `--send` 成功後，才會寫入新的上次成功送出時間。
 
 ### 保留下載的 collection
 
